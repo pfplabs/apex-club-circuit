@@ -1,0 +1,52 @@
+import * as THREE from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {track,heading,TRACK_WIDTH,trackLength,PIT} from './simulation.js';
+const rnd=(()=>{let s=31273;return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};})();
+const mat=(color,opts={})=>new THREE.MeshStandardMaterial({color,...opts});
+function texture(kind){
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const c=canvas.getContext('2d');
+ c.fillStyle=kind==='grass'?'#5b713b':'#414745';c.fillRect(0,0,256,256);
+ for(let i=0;i<25000;i++){const v=rnd();c.fillStyle=kind==='grass'?`rgba(${v>.5?'140,157,85':'30,55,30'},${rnd()*.3})`:`rgba(${v>.5?'160,169,163':'10,20,15'},${rnd()*.25})`;c.fillRect(rnd()*256,rnd()*256,1+rnd()*2,1+rnd()*2);}
+ const t=new THREE.CanvasTexture(canvas);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
+}
+function mesh(geo,material,scene,x=0,y=0,z=0){const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
+function ribbon(left,right,height,material,scene){const p=[],uv=[],idx=[];for(let i=0;i<=track.length;i++){const t=track[i%track.length],a=heading(i%track.length),nx=Math.cos(a),nz=-Math.sin(a);p.push(t.x+nx*left,height,t.z+nz*left,t.x+nx*right,height,t.z+nz*right);uv.push(0,i*.12,1,i*.12);if(i<track.length){const k=i*2;idx.push(k,k+2,k+1,k+1,k+2,k+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=mesh(g,material,scene);m.castShadow=false;return m;}
+function sign(text,bg='#161e20',fg='#eafa3c',w=12,h=2){const c=document.createElement('canvas');c.width=1024;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,1024,128);x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';x.font='bold 74px Arial';x.fillText(text,512,67);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:tex,side:THREE.DoubleSide,roughness:.9}));}
+export async function createWorld(scene,renderer,options={}){
+ scene.background=new THREE.Color('#91bddc');scene.fog=new THREE.Fog('#afc9d4',400,1100);
+ scene.add(new THREE.HemisphereLight('#dcefff','#526145',2.4));const sun=new THREE.DirectionalLight('#fff0d8',3.3);sun.position.set(150,260,190);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left= -300;sun.shadow.camera.right=300;sun.shadow.camera.top=300;sun.shadow.camera.bottom= -300;sun.shadow.camera.near=1;sun.shadow.camera.far=800;sun.shadow.normalBias=.12;sun.shadow.bias=-.0002;scene.add(sun);
+ // A true 3D sky dome and dimensional clouds, not a screenshot background.
+ const sky=new THREE.Mesh(new THREE.SphereGeometry(900,32,20),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color('#2167ae')},bottom:{value:new THREE.Color('#d1e2e7')}},vertexShader:'varying vec3 v;void main(){v=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform vec3 top;uniform vec3 bottom;varying vec3 v;void main(){float h=max(normalize(v).y,0.);gl_FragColor=vec4(mix(bottom,top,pow(h,.55)),1.);}'}));scene.add(sky);
+ const cloudMat=new THREE.MeshStandardMaterial({color:'#fffaf1',roughness:1,transparent:true,opacity:.88,depthWrite:false});
+ for(let j=0;j<28;j++){const angle=rnd()*Math.PI*2,dist=300+rnd()*400,x=Math.sin(angle)*dist,z=Math.cos(angle)*dist,y=100+rnd()*70;for(let k=0;k<4;k++){const cloud=mesh(new THREE.SphereGeometry(1,10,6),cloudMat,scene,x+k*16,y+rnd()*5,z);cloud.scale.set(22+rnd()*16,7+rnd()*4,12+rnd()*6);cloud.castShadow=false;}}
+ const grass=texture('grass');grass.repeat.set(100,100);mesh(new THREE.PlaneGeometry(2000,2000),mat('#b5c684',{map:grass,roughness:1}),scene).rotation.x=-Math.PI/2;
+ ribbon(-14.8,14.8,.015,mat('#77766b',{roughness:1}),scene);ribbon(-11.2,11.2,.02,mat('#93a269',{roughness:1}),scene);
+ const asphalt=texture('road');ribbon(-TRACK_WIDTH/2,TRACK_WIDTH/2,.035,mat('#b4b9b2',{map:asphalt,roughness:.96}),scene);
+ const white=mat('#f4f0d8',{roughness:.8}),red=mat('#c83d30',{roughness:.9});ribbon(-8.1,-7.94,.045,white,scene);ribbon(7.94,8.1,.045,white,scene);
+ // Kerbs are individual raised geometry, alternating red and white.
+ const kerbGeo=new THREE.BoxGeometry(.85,.12,1.2);for(let i=0;i<track.length;i+=2){const p=track[i],h=heading(i);for(const side of [-1,1]){const k=mesh(kerbGeo,(Math.floor(i/6)%2)?white:red,scene,p.x+Math.cos(h)*side*8.85,.09,p.z-Math.sin(h)*side*8.85);k.rotation.y=h;}}
+ const rail=mat('#aeb8b5',{metalness:.7,roughness:.48});for(const side of [-1,1]){for(let i=0;i<track.length;i+=8){const p=track[i],h=heading(i);if(side===1&&p.x>205&&p.z>PIT.minZ-10&&p.z<PIT.maxZ+10)continue;mesh(new THREE.BoxGeometry(.16,1.2,.16),rail,scene,p.x+Math.cos(h)*side*15.5,.6,p.z-Math.sin(h)*side*15.5);const q=track[(i+8)%track.length],len=Math.hypot(q.x-p.x,q.z-p.z);for(const y of [.68,1.05]){const r=mesh(new THREE.BoxGeometry(.12,.16,len+1),rail,scene,(p.x+q.x)/2+Math.cos(h)*side*15.5,y,(p.z+q.z)/2-Math.sin(h)*side*15.5);r.rotation.y=h;}}}
+ // Finish line and grid on the opening straight.
+ const start=track[0],h=heading(0);for(let x=-8;x<8;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
+ for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
+ const metal=mat('#303e41',{metalness:.6,roughness:.5});for(const x of [start.x-12,start.x+12])mesh(new THREE.BoxGeometry(.5,7,.5),metal,scene,x,3.5,start.z+3);
+ mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('F1 2013  /  CLUB CIRCUIT','#142021','#f0f64c',22,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
+ // Pit apron, entry wall and lane markings.
+ mesh(new THREE.BoxGeometry(26,.05,215),mat('#626866',{map:asphalt}),scene,229,.04,-60);
+ for(let z=-163;z<45;z+=8)mesh(new THREE.BoxGeometry(.15,.03,4),white,scene,222,.08,z);
+ const trees=new THREE.Group();scene.add(trees);const trunkMat=mat('#645047'),leaf=mat('#3c603b');for(let i=0;i<230;i++){const a=rnd()*Math.PI*2,d=340+rnd()*160,x=Math.sin(a)*d,z=Math.cos(a)*d;mesh(new THREE.CylinderGeometry(.35,.5,4,5),trunkMat,trees,x,2,z);const t=mesh(new THREE.ConeGeometry(3+rnd()*2,10+rnd()*5,6),leaf,trees,x,8,z);t.rotation.y=rnd()*6;}
+ for(let i=0;i<26;i++){const a=i/26*Math.PI*2;const m=mesh(new THREE.ConeGeometry(65+rnd()*45,70+rnd()*65,5),mat(i%2?'#788e91':'#718783'),scene,Math.sin(a)*650,25,Math.cos(a)*650);m.castShadow=false;}
+ // Next gate: subtle illuminated side posts rather than a wall across the road.
+ const gate=new THREE.Group();const glow=new THREE.MeshBasicMaterial({color:'#eafa51'});for(const side of [-1,1]){const p=mesh(new THREE.CylinderGeometry(.13,.13,2,6),glow,gate,side*7.2,1,0);p.castShadow=false;}scene.add(gate);
+ const loader=new GLTFLoader();const base=options.assetBase??`${import.meta.env?.BASE_URL??'/'}assets/`;
+ const [carAsset,pitAsset,standAsset]=await Promise.all(['car.glb','pit-building.glb','grandstand.glb'].map(p=>loader.loadAsync(`${base}${p}`)));
+ const car=carAsset.scene;car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
+ const buildings=new THREE.Group();scene.add(buildings);for(let i=0;i<11;i++){const pit=pitAsset.scene.clone();pit.position.set(PIT.buildingX,0,-135+i*12);pit.rotation.y=-Math.PI/2;buildings.add(pit);}for(let i=0;i<10;i++){const stands=standAsset.scene.clone();stands.position.set(184,0,-135+i*12);stands.rotation.y=Math.PI/2;buildings.add(stands);}buildings.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+ for(let j=0;j<10;j++){const board=sign(j%2?'OPEN WHEEL  /  2013':'APEX MOTORSPORT','#f0ed38','#202e28',11,1.8);board.position.set(194,1.4,-139+j*15);board.rotation.y=Math.PI/2;scene.add(board);}
+ const parking=mesh(new THREE.PlaneGeometry(9,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,237,.125,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',8,1);garageLabel.position.set(237.9,3.4,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);const pitEntry=sign('PIT LANE  →','#173328','#f4ff60',7,1.3);pitEntry.position.set(225,2.2,-158);pitEntry.rotation.y=Math.PI;scene.add(pitEntry);
+ const wheels=[];for(const name of ['Wheel_FL','Wheel_FR','Wheel_RL','Wheel_RR']){const obj=car.getObjectByName(name);if(obj)wheels.push(obj);}
+ // Batch static meshes by material; preserve the animated car, guide and sky.
+ const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
+ return {car,gate,wheels,sky,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
+}

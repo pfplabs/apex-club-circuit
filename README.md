@@ -1,23 +1,63 @@
-# Apex / Club Circuit
+# F1 2013 · 3D reconstruction
 
-A self-contained, original open-wheel time-attack minigame inspired by classic top-down racing. Race three clockwise laps around Emerald Park. No libraries, network requests, external assets, build step, or accounts.
+A real Three.js / WebGL 2 browser driving game, reconstructed from the surviving F1 2013 project screenshots. This branch replaces the previous flat Canvas prototype with actual 3D car, circuit, buildings, lighting and cameras. It is a reconstruction, not recovered original Maya/OpenGL source or an exact copy of Austin/Imola.
 
-## Play
+## Run locally
 
-Open `index.html` in a modern browser, or serve this folder using `python3 -m http.server 8080` and visit `http://localhost:8080`.
+Requires Node 20.19+ or 22.12+ and a browser with **WebGL 2 enabled**.
 
-- **↑ / W:** accelerator
-- **↓ / S:** brake (no reverse gear)
-- **← → / A D:** steering
-- **Space:** pause / resume when the canvas has focus
-- **Escape:** pause
-- On phones and tablets, hold the on-screen steering and pedal buttons. Multi-touch is supported.
-- Start, pause, resume, and restart buttons are available. The game pauses if the page loses focus or becomes hidden.
+```sh
+npm ci
+npm run dev
+```
 
-Brake early for tight corners. Grass slows the car considerably. Dashed lime gates indicate the next sector. All 12 sectors must be passed in order, in the forward direction, before a lap counts. If a sector is skipped, the lap is discarded at the finish line. Complete three valid laps for your results. The fastest valid lap is stored locally when browser storage is available; blocked storage does not prevent play.
+Open the Vite URL printed in the terminal. For a production build:
 
-## Implementation
+```sh
+npm run build
+npm run preview
+```
 
-The track is a closed Catmull–Rom spline. Procedural canvas scenery is cached separately from the car. Vehicle steering depends on speed, with acceleration, drag, braking, and off-road drag. The race simulation is frame-rate independent with capped frame deltas. This is an arcade time attack, not a licensed F1 simulation. There are no opponents, sound effects, or collision barriers; the goal is personal best laps.
+The game is self-contained after installation/build: Three.js, all GLBs, textures and interface assets are served locally. No external fonts, CDNs, trackers or accounts are required. Opening `index.html` directly as a file is unsupported.
 
-`game.js` exports its pure simulation helpers under Node for tests, while running directly as a classic browser script. `node test.js` exercises race progression, invalid and reverse laps, pause, braking, off-road penalties, formatting and frame bounds. It also physically drives three complete laps using only normal steering/pedal inputs at 30, 60, and 120 Hz, without teleporting or altering checkpoint state. Browser interaction and visual QA should be checked separately.
+## Drive
+
+- **W / ↑**: accelerate
+- **S / ↓**: brake
+- **A D / ← →**: steer
+- **C**: chase, cockpit or orbit camera
+- **R**: recover to the nearest point on the circuit
+- **Esc / Space**: pause/resume
+- **M**: toggle synthesized engine sound (off by default)
+- Touchscreen: hold the on-screen steering and pedal controls; multi-touch supported.
+
+Complete three validated laps, or take the pit lane on the right of the opening straight. Slow down and steer into the yellow-highlighted garage marked **PARK HERE / END SESSION**. Stopping inside ends the session. The garage can be used without completing any laps. The game pauses on loss of focus; resume when you return.
+
+The custom 1.57 km circuit has a fast opening straight, sweeping corners and a tighter infield section. A normal-input reference driver takes approximately **61 seconds per flying lap** (start lap ~63 seconds), tested at 30, 60 and 120 Hz. Human times vary. Handling is speed-sensitive arcade driving, not simulation-grade tyre physics. Trackside barriers, pit speed limiting, off-road slowdown and garage bounds are implemented.
+
+## Actual 3D assets
+
+- `public/assets/car.glb`: detailed white/yellow open-wheel car, red nose stripes, slick tyres, silver wheels, exposed suspension, cockpit, helmet and multi-element wings.
+- `public/assets/grandstand.glb`: blue seats, cedar back wall and canopy.
+- `public/assets/pit-building.glb`: cedar facade, glazed upper level and garage bays.
+- `blender/`: editable `.blend` sources, Blender 4.3.2 procedural reconstruction scripts, track centerline and asset verification.
+- `src/world.js`: true mesh circuit, raised kerbs, guardrails, pit lane, procedural asphalt/grass textures, daylight, 3D clouds, trees and distant terrain. Static mesh batching keeps runtime draw count manageable.
+
+Car forward is glTF **-Z**, up **+Y**. `Wheel_FL`, `Wheel_FR`, `Wheel_RL`, `Wheel_RR` are retained animation pivots. The original proportions/colors are the blueprint; physically based materials, environment lighting, shadows and the newer reference rendering guide the visual update. Fictional APEX labels replace original sponsor decals.
+
+## Verification and current limitations
+
+```sh
+npm test
+npm run build
+```
+
+16 automated checks pass, including loading all real GLBs into a finite 110-mesh / ~690k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+
+**Browser visual/performance QA is still pending on a WebGL-enabled computer.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
+
+No deployment was performed. The original prototype remains on `main` and is retained here under `legacy-2d/`. See `docs/QA.md` for pending browser checks and recording instructions.
+
+## Reference provenance
+
+Original project and screenshots: [FH Salzburg F1 2013 portfolio, archived 2024-02-25](https://web.archive.org/web/20240225230049/https://portfolio.fh-salzburg.ac.at/projects/2013-f1-2013). Source screenshots were visually inspected; no original 3D files or textures were available. Modernized reference montage supplied in the working conversation was inspected for updated surface and lighting direction. No image is used as a flat gameplay background.
