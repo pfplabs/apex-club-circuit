@@ -18,7 +18,7 @@ npm run build
 npm run preview
 ```
 
-The game is self-contained after installation/build: Three.js, all GLBs, textures and interface assets are served locally. No external fonts, CDNs, trackers or accounts are required. Opening `index.html` directly as a file is unsupported.
+The game is self-contained after installation/build: Three.js, all GLBs, textures and interface assets are served locally. No runtime external fonts, CDNs, trackers or accounts are required. Opening `index.html` directly as a file is unsupported.
 
 ## Drive
 
@@ -41,7 +41,7 @@ The custom 1.57 km circuit has a fast opening straight, sweeping corners and a t
 - `public/assets/grandstand.glb`: blue seats, cedar back wall and canopy.
 - `public/assets/pit-building.glb`: cedar facade, glazed upper level and garage bays.
 - `blender/`: editable `.blend` sources, Blender 4.3.2 procedural reconstruction scripts, track centerline and asset verification.
-- `src/world.js`: true mesh circuit, raised kerbs, guardrails, pit lane, procedural asphalt/grass textures, daylight, 3D clouds, trees and distant terrain. Static mesh batching keeps runtime draw count manageable.
+- `src/world.js`: true mesh circuit, raised kerbs, guardrails, pit lane, CC0 photographic asphalt/grass PBR maps, a photographic HDR daylight sky, clustered foliage trees and displaced distant terrain. Static mesh batching keeps runtime draw count manageable.
 
 Car forward is glTF **-Z**, up **+Y**. `Wheel_FL`, `Wheel_FR`, `Wheel_RL`, `Wheel_RR` are retained animation pivots. The original proportions/colors are the blueprint; physically based materials, environment lighting, shadows and the newer reference rendering guide the visual update. Fictional APEX labels replace original sponsor decals.
 
@@ -52,7 +52,7 @@ npm test
 npm run build
 ```
 
-16 automated checks pass, including loading all real GLBs into a finite 110-mesh / ~690k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+16 automated checks pass, including loading all real GLBs into a finite 84-mesh / ~856k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
 
 **Browser visual/performance QA is still pending on a WebGL-enabled computer.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
 
@@ -61,3 +61,5 @@ No deployment was performed. The original prototype remains on `main` and is ret
 ## Reference provenance
 
 Original project and screenshots: [FH Salzburg F1 2013 portfolio, archived 2024-02-25](https://web.archive.org/web/20240225230049/https://portfolio.fh-salzburg.ac.at/projects/2013-f1-2013). Source screenshots were visually inspected; no original 3D files or textures were available. Modernized reference montage supplied in the working conversation was inspected for updated surface and lighting direction. No image is used as a flat gameplay background.
+
+The updated browser environment uses locally stored Poly Haven CC0 photographic HDR/albedo/normal/roughness assets (see `public/assets/CREDITS.md`). Image decoding, GPU shading and final visual fidelity still need the WebGL browser check. The geometry-only automated test intentionally skips image decoding.

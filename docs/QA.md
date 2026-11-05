@@ -1,7 +1,7 @@
 # Verification record
 
 ## Passed
-- `npm test`: 16 tests. Includes all GLBs decoded by Three.js GLTFLoader, finite geometry, exactly four wheel pivots, 110 static/animated meshes after material batching and approximately 689,646 triangles.
+- `npm test`: 16 tests. Includes all GLBs decoded by Three.js GLTFLoader, finite geometry, exactly four wheel pivots, 84 static/animated meshes after material batching and approximately 855,666 triangles.
 - `npm run build`: successful Vite production bundle. Three.js is a large vendor dependency; the size warning is informational.
 - Three laps using only throttle/brake/steer inputs, never teleporting or changing lap counters:
   - 30 Hz: 1:02.433 / 1:00.800 / 1:00.833.
@@ -39,3 +39,5 @@ Suggested 30–45 second edit:
 - 4s stopped session result.
 
 Use the browser/OS recording tool on the QA machine. Preserve raw recording before editing. Include “WIP gameplay” until visual QA is complete. Label cuts/time compression transparently. No external game video or synthesized action.
+
+The updated browser environment uses locally stored Poly Haven CC0 photographic HDR/albedo/normal/roughness assets (see `public/assets/CREDITS.md`). Image decoding, GPU shading and final visual fidelity still need the WebGL browser check. The geometry-only automated test intentionally skips image decoding.

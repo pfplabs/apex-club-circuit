@@ -1,4 +1,4 @@
-import bpy, math, os, os, json
+import bpy, math, os, json
 from mathutils import Vector
 OUT=os.path.dirname(os.path.abspath(__file__))
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)

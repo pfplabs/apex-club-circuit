@@ -51,7 +51,7 @@ const map=$('map').getContext('2d');function drawMap(){map.clearRect(0,0,260,260
 let last=performance.now(),clock=0,accumulator=0,wheelAngle=0;const look=new THREE.Vector3(),desired=new THREE.Vector3(),forward=new THREE.Vector3(),right=new THREE.Vector3();
 function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;clock+=dt;if(!world)return;
  accumulator+=dt;while(accumulator>=1/120){race.step(1/120,input);accumulator-=1/120;}
- if(previousState!==race.state)setStateUI();const c=race.car;world.car.position.set(c.x,.035,c.z);world.car.rotation.y=c.yaw+Math.PI;
+ if(previousState!==race.state)setStateUI();const c=race.car;world.car.position.set(c.x,.035,c.z);world.car.rotation.y=c.yaw+Math.PI;world.sun.position.set(c.x+150,260,c.z+190);world.sun.target.position.set(c.x,0,c.z);world.sun.target.updateMatrixWorld();
  wheelAngle+=c.speed*dt/.36;world.wheels.forEach(w=>{w.rotation.x=wheelAngle;if(w.name==='Wheel_FL'||w.name==='Wheel_FR')w.rotation.y=-c.steer*.28;});
  forward.set(Math.sin(c.yaw),0,Math.cos(c.yaw));right.set(Math.cos(c.yaw),0,-Math.sin(c.yaw));
  if(race.state==='ready'){
