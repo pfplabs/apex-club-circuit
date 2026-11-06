@@ -25,12 +25,12 @@ for(const direction of [-1,1])test(`separator blocks a normal-input crossing fro
  assert(contacted);assert.equal(r.state,'racing');
 });
 for(const hz of [30,60,120])test(`normal controls still park in open garage at ${hz} Hz`,()=>{
- const r=started(),goals=[[228,-135],[230,-110],[230,-90],[230,-82],[231,-78],[234,-74],[240.8,-73.5]];let g=0,contacts=0;
+ const r=started(),goals=[[228,-135],[230,-110],[230,-90],[230,-82],[231,-78],[234,-74],[244,-73.5]];let g=0,contacts=0;
  for(let f=0;f<hz*50&&r.state==='racing';f++){
   const c=r.car,p=goals[g],d=Math.hypot(p[0]-c.x,p[1]-c.z),e=angleDiff(Math.atan2(p[0]-c.x,p[1]-c.z),c.yaw);
   if(d<3&&g<goals.length-1)g++;const speed=g===goals.length-1?Math.min(3,d*1.6):g>2?5:10;
   r.step(1/hz,{gas:c.speed<speed&&d>.6,brake:c.speed>.05&&(c.speed>speed+.2||g===goals.length-1&&d<.9),steer:clamp(-e*4)});contacts+=r.contact?1:0;
  }
- assert.equal(r.state,'parked');assert.equal(r.car.speed,0);assert(r.car.x>239.2);assert(Math.abs(r.car.z-PIT.garageZ)<1.05);
+ assert.equal(r.state,'parked');assert.equal(r.car.speed,0);assert(r.car.x>243.0);assert(Math.abs(r.car.z-PIT.garageZ)<1.05);
  assert.equal(contacts,0);console.log(`${hz} Hz garage parked in ${r.elapsed.toFixed(3)} s; contacts=${contacts}`);
 });

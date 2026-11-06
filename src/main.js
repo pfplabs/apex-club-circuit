@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {prepareRenderer} from './render-preparation.js';
 import {vehicleGroundPose} from './vehicle-ground.js';
 import {pitServiceView} from './pit-service.js';
 import {createTyreServiceRig,updateTyreServiceRig} from './tyre-visuals.js';
@@ -14,6 +15,9 @@ const ui={hud:$('hud'),menu:$('menu'),pause:$('pause-menu'),results:$('results')
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,1800);let renderer,world,cameraMode=0,best=Infinity,previousState='',loaded=false,engine,audioOn=false,guideEnabled=true,tyreRig,previousPitPhase='idle';
 try{best=Number(localStorage.getItem('f1-3d-best-course-v3'))||Infinity;}catch{}
 $('best').textContent=formatTime(best);$('start').disabled=true;
+const startup={startedAt:performance.now()},frameStats={frames:0,worstMs:0,over50ms:0};
+function loadStage(text,progress){$('load-status').textContent=text;$('load-progress').firstElementChild.style.width=`${Math.round(progress*100)}%`;$('start').textContent=progress<1?'PREPARING CIRCUIT…':'TAKE THE WHEEL ↗';}
+loadStage('LOADING MODELS & MATERIALS',0);
 try{
  renderer=new THREE.WebGLRenderer({canvas:$('scene'),antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.06).texture;pmrem.dispose();
 }catch(e){showError('This game needs WebGL 2. Try an up-to-date browser with hardware acceleration enabled.');throw e;}
@@ -28,7 +32,7 @@ function setStateUI(){
  previousState=s;
 }
 function clearInput(){Object.keys(input).forEach(k=>input[k]=false);document.querySelectorAll('[data-control]').forEach(b=>b.classList.remove('pressed'));}
-function start(){if(!loaded)return;race.start();setStateUI();clearInput();if(audioOn)engine?.ctx.resume();}
+function start(){if(!loaded)return;race.start();frameStats.frames=0;frameStats.worstMs=0;frameStats.over50ms=0;setStateUI();clearInput();if(audioOn)engine?.ctx.resume();}
 function restart(){race.reset();race.start();clearInput();setStateUI();}
 function pause(){race.pause();clearInput();setStateUI();}
 $('start').onclick=start;$('resume').onclick=start;$('restart').onclick=restart;$('restart-pause').onclick=restart;$('pause').onclick=pause;
@@ -58,7 +62,7 @@ for(const b of document.querySelectorAll('[data-control]')){
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 const map=$('map').getContext('2d'),mapBounds={minX:Math.min(...track.map(p=>p.x)),maxX:Math.max(...track.map(p=>p.x)),minZ:Math.min(...track.map(p=>p.z)),maxZ:Math.max(...track.map(p=>p.z))},mapScale=228/Math.max(mapBounds.maxX-mapBounds.minX,mapBounds.maxZ-mapBounds.minZ);function drawMap(){map.clearRect(0,0,260,260);const pt=p=>[130+(p.x-(mapBounds.minX+mapBounds.maxX)/2)*mapScale,130+(p.z-(mapBounds.minZ+mapBounds.maxZ)/2)*mapScale];map.lineWidth=10;map.lineJoin='round';map.strokeStyle='#06131299';map.beginPath();track.forEach((p,i)=>{const [x,y]=pt(p);i?map.lineTo(x,y):map.moveTo(x,y);});map.closePath();map.stroke();map.lineWidth=3;map.strokeStyle='#eceddf';map.stroke();const gate=track[(race.nextCheckpoint*60)%track.length],[gx,gy]=pt(gate);map.fillStyle='#f2fa3d';map.fillRect(gx-3,gy-3,6,6);const [x,y]=pt(race.car);map.fillStyle='#effc43';map.beginPath();map.arc(x,y,5,0,Math.PI*2);map.fill();}
 let last=performance.now(),clock=0,accumulator=0,wheelAngle=0;const look=new THREE.Vector3(),desired=new THREE.Vector3(),forward=new THREE.Vector3(),right=new THREE.Vector3();
-function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;clock+=dt;if(!world)return;
+function animate(now){requestAnimationFrame(animate);const frameMs=now-last,dt=Math.min(frameMs/1000,.05);last=now;if(loaded&&race.state==='racing'){frameStats.frames++;frameStats.worstMs=Math.max(frameStats.worstMs,frameMs);if(frameMs>50)frameStats.over50ms++;}clock+=dt;if(!world)return;
  accumulator+=dt;while(accumulator>=1/120){race.step(1/120,input);accumulator-=1/120;}
  if(previousState!==race.state)setStateUI();const c=race.car;world.car.position.set(c.x,.035,c.z);world.car.rotation.y=c.yaw+Math.PI;world.sun.position.set(c.x+150,260,c.z+190);world.sun.target.position.set(c.x,0,c.z);world.sun.target.updateMatrixWorld();
  if(race.state==='racing')wheelAngle+=wheelSpinDelta(c.speed,dt);updateWheelRig(world.wheelRig,wheelAngle,c.steer);
@@ -85,9 +89,15 @@ function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last
  if(engine){engine.osc.frequency.setTargetAtTime(55+Math.abs(c.speed)*5,engine.ctx.currentTime,.08);engine.gain.gain.setTargetAtTime(audioOn&&race.state==='racing'?.026:0,engine.ctx.currentTime,.1);}
  const cue=updateRacingGuide(world.guide,race,clock,guideEnabled),braking=$('brake-cue');braking.classList.toggle('hidden',!cue.active);braking.style.setProperty('--urgency',String(cue.intensity));
  if(cue.active){$('brake-target').textContent=`SLOW TO ${Math.round((cue.corner?.targetSpeed??cue.recommendedSpeed)*3.6)} KM/H`;$('brake-distance').textContent=cue.corner&&cue.corner.distance>8?`${Math.round(cue.corner.distance)} M TO CORNER`:'EASE OFF / BRAKE';}
- drawMap();renderer.render(scene,camera);
+ world.woodland.updateFoliage(camera.position);world.brakingDetails.updateTyreBarriers(camera.position);drawMap();renderer.render(scene,camera);
 }
 requestAnimationFrame(animate);
-createWorld(scene,renderer).then(w=>{world=w;tyreRig=createTyreServiceRig(w.wheelRig);loaded=true;camera.position.set(race.car.x-5,3,race.car.z-7);$('load-status').textContent='READY · ALL ASSETS LOCAL';$('length').textContent=(w.trackLength/1000).toFixed(2);$('start').disabled=false;setStateUI();}).catch(e=>{console.error(e);showError('The 3D assets could not load. Serve this project with npm run dev or npm run preview; do not open index.html directly. '+e.message);});
+createWorld(scene,renderer,{onProgress:p=>loadStage(`${p.stage} · ${p.done} / ${p.total}`,p.done/p.total*.65)}).then(async w=>{
+ startup.assetsMs=Math.round(performance.now()-startup.startedAt);tyreRig=createTyreServiceRig(w.wheelRig);camera.position.set(race.car.x-5,3,race.car.z-7);camera.lookAt(race.car.x,1,race.car.z);w.car.position.set(race.car.x,.035,race.car.z);w.car.rotation.y=race.car.yaw+Math.PI;
+ const preview={active:true,jackHeight:.12,wheelOut:.4,toolSpin:2};updateServiceTools(w.serviceTools,race.car,preview);
+ w.woodland.updateFoliage(camera.position);w.brakingDetails.updateTyreBarriers(camera.position);w.serviceTools.group.position.y=-50;
+ startup.gpu=await prepareRenderer(renderer,scene,camera,{onStage:loadStage,warmGroups:[w.serviceTools.group,w.guide.group,w.gate,w.woodland,w.brakingDetails.tyreLOD]});w.serviceTools.group.visible=false;
+ world=w;loaded=true;startup.totalMs=Math.round(performance.now()-startup.startedAt);loadStage('READY · ASSETS & GPU PREPARED',1);$('load-progress').classList.add('hidden');$('length').textContent=(w.trackLength/1000).toFixed(2);$('start').disabled=false;setStateUI();
+}).catch(e=>{console.error(e);showError('The 3D assets or renderer could not initialize. Serve this project with npm run dev or npm run preview, then try an up-to-date WebGL browser. '+e.message);});
 // Read-only diagnostics for QA. Gameplay inputs still go through normal controls.
-window.__F1_TEST__={snapshot:()=>({loaded,state:race.state,car:{...race.car},laps:[...race.laps],elapsed:race.elapsed,nextCheckpoint:race.nextCheckpoint,offroad:race.offroad,inPit:race.inPit,meshCount:world?.meshCount,triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,cameraMode,guideEnabled,pitService:{...race.pitService}}),nearest,track,heading,angleDiff};
+window.__F1_TEST__={snapshot:()=>({loaded,state:race.state,car:{...race.car},laps:[...race.laps],elapsed:race.elapsed,nextCheckpoint:race.nextCheckpoint,offroad:race.offroad,inPit:race.inPit,meshCount:world?.meshCount,triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,cameraMode,guideEnabled,pitService:{...race.pitService},startup:{...startup},frameStats:{...frameStats},foliage:world?.woodland.userData.lodStats,barriers:world?.brakingDetails.tyreLOD.userData.lodStats}),nearest,track,heading,angleDiff};

@@ -6,7 +6,7 @@ export const COMPOUNDS = Object.freeze({
   hard: Object.freeze({label:'HARD',color:'#f4f4ed',grip:.975,wearPerKm:.055}),
 });
 export const SERVICE_SECONDS = 5;
-export const SERVICE_GEOMETRY = Object.freeze({boxX:230,garageZ:-73.5,turnRadius:4,parkX:240.5,wallX:220,facadeX:238.45,backX:243.2,doorHalfWidth:1.30,halfWidth:1.017,halfLength:2.65});
+export const SERVICE_GEOMETRY = Object.freeze({boxX:230,garageZ:-73.5,turnRadius:4,parkX:244,wallX:220,facadeX:238.45,backX:250.3,doorHalfWidth:2.78,halfWidth:1.017,halfLength:2.65});
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const diff=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};

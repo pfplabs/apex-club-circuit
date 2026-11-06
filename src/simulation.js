@@ -1,3 +1,4 @@
+import {KERB_ALLOWANCE} from './surface-profile.js';
 import {createPitService,selectPitService,stepPitService,advanceTyreWear,tyreGrip} from './pit-service.js';
 // Units are meters and seconds. Rendering has no role in simulation or lap validation.
 export const TRACK_WIDTH = 17;
@@ -50,7 +51,7 @@ export class Race {
    if(this.state==='countdown'){this.countdown-=dt;if(this.countdown<=0){this.state='racing';this.countdown=0;}return;}
    if(this.state!=='racing')return;
    this.elapsed+=dt;this.lapTime+=dt;
-   const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=n.distance>TRACK_WIDTH/2&&!this.inPit;this.contact=false;
+   const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=Math.abs(n.side)>TRACK_WIDTH/2+KERB_ALLOWANCE&&!this.inPit;this.contact=false;
    if(stepPitService(this.pitService,c,dt,{inPit:this.inPit,raceState:this.state})){
      this.offroad=false;this.contact=false;
      if(this.pitService.phase==='released')this.servicePedalLatch=true;
@@ -86,10 +87,10 @@ export class Race {
    }
    if(this.inPit){
      // Buildings and the pit wall are physical bounds. The highlighted garage is open.
-     const bay=Math.abs(c.z-PIT.garageZ)<1.05;
+     const bay=Math.abs(c.z-PIT.garageZ)<1.7;
      if(c.z>-145&&c.z<0&&c.x>237.2&&!bay){c.x=237.2;c.speed*=.25;this.contact=true;}
-     if(c.x>241){c.x=241;c.speed=0;}
-     if(bay&&c.x>239.2&&Math.abs(c.speed)<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
+     if(c.x>244){c.x=244;c.speed=0;}
+     if(bay&&c.x>243.0&&Math.abs(c.speed)<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
    }
    advanceTyreWear(this.pitService,Math.hypot(c.x-previousX,c.z-previousZ));
    this.recordProgress(nearest(c.x,c.z));

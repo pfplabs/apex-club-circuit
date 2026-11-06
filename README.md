@@ -39,14 +39,14 @@ The custom 3.03 km circuit uses COTA/Imola-inspired sequencing: a 670 m main str
 ## Actual 3D assets
 
 - `public/assets/car.glb`: detailed white/yellow open-wheel car, red nose stripes, slick tyres, silver wheels, exposed suspension, cockpit, helmet and multi-element wings.
-- `public/assets/pit-crew.glb`: three staged crew with white/yellow suits, visors, jack, wheelgun and spare tyre. Crew remain in static poses; the service jacks, wheels and nut tools animate during tyre changes. The 40 unstaffed bays have dimensional roller shutters; the staffed four-bay garage remains open, including the parking bay.
+- `public/assets/pit-crew.glb`: three staged crew with white/yellow suits, visors, jack, wheelgun and spare tyre. Crew remain in static poses; the service jacks, wheels and nut tools animate during tyre changes. The 20 unstaffed bays have dimensional roller shutters; the staffed two-bay garage remains open, including the parking bay.
 - `public/assets/pit-props.glb`: cabinets, racks, tools, hoses and interior lighting details.
 - `public/assets/oak-realistic.glb`: original branched oak geometry and alpha-cutout leaf textures.
 - `public/assets/grandstand.glb`: blue seats, cedar back wall and canopy.
 - `public/assets/pit-building.glb`: cedar facade, glazed upper level and garage bays.
 - `blender/pit-scene/`: pit-focused Blender snapshot of the crew/shutter stage with repository-relative textures with reproducible snapshot exporter, crew and closed unstaffed shutters. A WIP visualization, not gameplay.
 - `blender/`: editable `.blend` sources, Blender 4.3.2 procedural reconstruction scripts, track centerline and asset verification.
-- `src/world.js`: true mesh circuit, raised kerbs, guardrails, pit lane, CC0 photographic asphalt/grass PBR maps, a photographic HDR daylight sky, 108 instanced branched trees with textured alpha-cutout foliage and displaced distant terrain. Static mesh batching keeps runtime draw count manageable.
+- `src/world.js`: true mesh circuit, low-profile rideable kerbs, guardrails, pit lane, CC0 photographic asphalt/grass PBR maps, a photographic HDR daylight sky, 105 distance-LOD instanced branched trees with textured alpha-cutout foliage and displaced distant terrain. Static mesh batching keeps runtime draw count manageable.
 
 Car forward is glTF **-Z**, up **+Y**. `Wheel_FL`, `Wheel_FR`, `Wheel_RL`, `Wheel_RR` are retained animation pivots. The original proportions/colors are the blueprint; physically based materials, environment lighting, shadows and the newer reference rendering guide the visual update. Fictional APEX labels replace original sponsor decals.
 
@@ -57,7 +57,7 @@ npm test
 npm run build
 ```
 
-63 automated checks pass, including loading all real GLBs into a finite 135-mesh world (including instanced trees and safety barriers), four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+74 automated checks pass, including loading all real GLBs into a finite 137-mesh world (including instanced trees and safety barriers), four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
 
 **The real WebGL browser has rendered and driven the handling-fix build; the user confirmed the corrected steering feels better. The newer track, guidance, detailed environment and pit route still need browser visual/performance QA.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
 
@@ -71,4 +71,12 @@ The updated browser environment uses locally stored Poly Haven CC0 photographic 
 
 ## Fictional sponsors
 
-TORQEN fuels/lubricants, RELAYON media, HEXLUME computing and STRATUM Raceworks appear as original surface decals and mounted track/paddock/gantry panels. Five car marks use one atlas material and69 triangles, without changing wheel pivots. SVG sources, PNG atlas, font license and regeneration script are included. No trademark-clearance claim is made.
+TORQEN fuels/lubricants, RELAYON media, HEXLUME computing and STRATUM Raceworks appear as original surface decals and mounted track/paddock/gantry panels. Five car marks use one atlas material and 69 triangles, without changing wheel pivots. SVG sources, PNG atlas, font license and regeneration script are included. No trademark-clearance claim is made.
+
+## Today-ready refinement pass
+
+The active garage now uses two 6m-wide bays per 12m block, 12m structural depth and about 3.2m clear height. These are practical design choices, not claimed FIA requirements. The garage roll ends at X244, with space for the actual car and rear workstations. Current source files are in `blender/expanded-garage/`; older Blender snapshots retain their earlier stage intentionally. Photographic CC0 Hinoki timber uses 1.9m metric mapping, and the original car livery now has a restrained clearcoat layer.
+
+Start remains disabled while assets load, textures upload, shaders compile and three warm-up frames render. Read-only diagnostics expose preparation timing and frame stalls; this is preparation, not a promise of smoothness on every GPU. Trees and tyre barriers crossfade to lower detail and fade out at long range. Geometry-submission tests show ~70% tree and ~87.5% barrier reductions at the starting camera, not measured FPS improvements. Kerbs peak only 2.5cm above the road, and their paved riding area retains road grip.
+
+This combined refinement pass needs real browser visual/performance verification, particularly dither transitions, loading behaviour, expanded-garage camera clearance and service controls.

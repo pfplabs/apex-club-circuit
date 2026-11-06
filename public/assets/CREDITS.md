@@ -13,3 +13,5 @@ The car, pit building and grandstand geometry are original Blender reconstructio
 The oak tree, bark/leaf textures, pit equipment and three crew are original procedural Blender assets created for this project. These are authored approximations, not scanned/photogrammetry assets. Editable sources and reproducible scripts are in blender/foliage, blender/pit-props and blender/pit-crew. Crew suits follow the supplied white/yellow reference palette. No third-party human model or likeness was used.
 
 Fictional TORQEN, RELAYON, HEXLUME and STRATUM sponsor marks, layouts and atlas are original project artwork. Text outlines use DejaVu Sans Bold under its permissive license, included in sponsors/FONT-LICENSE.txt. They do not copy the original real sponsor logos, and no name-clearance claim is made.
+
+- Hinoki Planks by Charlotte Baglioni, 1K albedo/OpenGL normal/roughness, 1.9m tile: https://polyhaven.com/a/hinoki_planks . CC0, official download URLs and local SHA256 fingerprints recorded in textures/wood-provenance.json. The photographed wood is Japanese cypress, used as a warm timber finish rather than claimed cedar photography.

@@ -31,8 +31,8 @@ test('physical advisory-line driver completes 3 safe one-minute laps at 30, 60 a
  }
 });
 test('pit lane is drivable and stopping in the garage ends the session',()=>{
- const r=running(),goals=[[228,-135],[230,-110],[230,-90],[230,-82],[231,-78],[234,-74],[240.8,-73.5]];let g=0;
+ const r=running(),goals=[[228,-135],[230,-110],[230,-90],[230,-82],[231,-78],[234,-74],[244,-73.5]];let g=0;
  for(let f=0;f<60*50&&r.state==='racing';f++){const c=r.car,p=goals[g],d=Math.hypot(p[0]-c.x,p[1]-c.z),e=angleDiff(Math.atan2(p[0]-c.x,p[1]-c.z),c.yaw);if(d<3&&g<goals.length-1)g++;const speed=g===goals.length-1?Math.min(3,d*1.6):g>2?5:10;r.step(1/60,{gas:c.speed<speed&&d>.6,brake:c.speed>.05&&(c.speed>speed+.2||g===goals.length-1&&d<.9),steer:Math.max(-1,Math.min(1,-e*4))});}
- assert.equal(r.state,'parked');assert.equal(r.car.speed,0);assert.equal(r.laps.length,0);assert(r.car.x>239.2);const t=r.elapsed;r.step(.05,{gas:true});assert.equal(r.elapsed,t);
+ assert.equal(r.state,'parked');assert.equal(r.car.speed,0);assert.equal(r.laps.length,0);assert(r.car.x>243.0);const t=r.elapsed;r.step(.05,{gas:true});assert.equal(r.elapsed,t);
 });
 test('pit wall prevents driving through closed garage piers',()=>{const r=running();r.car.x=238;r.car.z=-84;r.car.speed=8;r.step(.01);assert(r.contact);assert.equal(r.car.x,237.2);});

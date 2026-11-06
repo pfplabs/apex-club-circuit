@@ -1,3 +1,4 @@
+import {addTyreBarrierLOD} from './tyre-lod.js';
 import * as THREE from 'three';
 import {track,heading} from './simulation.js';
 import {PIT,pitCenterX,pitEdges} from './pit-lane.js';
@@ -8,7 +9,7 @@ export function createSculptedKerbs(scene){
  const positions=[],colors=[];let distance=0;
  for(let i=0;i<track.length;i++){const a=track[i],b=track[(i+1)%track.length],len=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.ceil(len/1.1));
   for(let j=0;j<steps;j++){const t0=j/steps,t1=(j+1)/steps,p={x:a.x+(b.x-a.x)*t0,z:a.z+(b.z-a.z)*t0},q={x:a.x+(b.x-a.x)*t1,z:a.z+(b.z-a.z)*t1},h=Math.atan2(q.x-p.x,q.z-p.z),color=Math.floor((distance+len*t0)/2.3)%2?[.83,.83,.76]:[.56,.055,.035];
-   for(const side of [-1,1]){if(side===1&&p.x>205&&p.z>PIT.minZ&&p.z<PIT.maxZ)continue;for(const [o1,y1,o2,y2]of [[8.43,.042,8.93,.135],[8.93,.135,9.26,.055]])appendQuad(positions,colors,point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o1,y1),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o1,y1),point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o2,y2),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o2,y2),color);}
+   for(const side of [-1,1]){if(side===1&&p.x>205&&p.z>PIT.minZ&&p.z<PIT.maxZ)continue;for(const [o1,y1,o2,y2]of [[8.43,.035,8.93,.06],[8.93,.06,9.26,.043]])appendQuad(positions,colors,point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o1,y1),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o1,y1),point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o2,y2),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o2,y2),color);}
   }distance+=len;
  }
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.83,side:THREE.DoubleSide}));mesh.receiveShadow=true;mesh.name='Continuous sloped kerbs';scene.add(mesh);
@@ -28,8 +29,9 @@ export function addBrakingDetails(scene,advice,makeSign){
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(gp,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(guv,2));g.computeVertexNormals();const patch=new THREE.Mesh(g,gravel);patch.receiveShadow=true;patch.name='Gravel runoff';scene.add(patch);
  }
- const tyres=new THREE.InstancedMesh(tyreGeometry,rubber,transforms.length);transforms.forEach((m,i)=>tyres.setMatrixAt(i,m));tyres.castShadow=true;tyres.receiveShadow=true;tyres.name='Stacked tyre safety barriers';scene.add(tyres);
- return {apexes,tyres:transforms.length};
+ const tyreLOD=addTyreBarrierLOD(scene,transforms,tyreGeometry,rubber);
+ tyreGeometry.dispose();rubber.dispose();
+ return {apexes,tyres:transforms.length,tyreLOD,updateTyreBarriers:tyreLOD.updateTyreBarriers};
 }
 
 export function addPitLaneDetails(scene,roadMaterial,makeSign){
