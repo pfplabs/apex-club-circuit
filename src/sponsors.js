@@ -15,7 +15,7 @@ export async function loadSponsorMaterial(url = '/assets/sponsors/sponsor-atlas.
   map.colorSpace = THREE.SRGBColorSpace;
   map.anisotropy = anisotropy;
   return new THREE.MeshStandardMaterial({
-    name: 'Fictional sponsor atlas', map, roughness: 0.67, metalness: 0.02,
+    name: 'Fictional sponsor atlas', userData:{keepColorMap:true}, map, roughness: 0.67, metalness: 0.02,
     polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
     depthWrite: false,
   });
