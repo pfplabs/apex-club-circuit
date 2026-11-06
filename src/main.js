@@ -3,7 +3,7 @@ import {roadSurface} from './course.js';
 import * as THREE from 'three';
 import {prepareRenderer} from './render-preparation.js';
 import {vehicleGroundPose} from './vehicle-ground.js';
-import {pitServiceView} from './pit-service.js';
+import {serviceBox,pitServiceView} from './pit-service.js';
 import {pitGuidance} from './pit-guidance.js';
 import {createTyreServiceRig,updateTyreServiceRig} from './tyre-visuals.js';
 import {updateServiceTools} from './service-tools.js';
@@ -14,6 +14,8 @@ import {updateRacingGuide} from './racing-guide.js';
 import {createWorld} from './world.js';
 import './style.css';
 const $=id=>document.getElementById(id),race=new Race(),input={left:false,right:false,gas:false,brake:false};
+// Local visual QA starts at the service box; production builds remove this branch.
+if(import.meta.env.DEV&&new URLSearchParams(location.search).get('qa')==='pit'){Object.assign(race.car,serviceBox());race.state='racing';race.pitService.phase='offered';race.pitService.settled=.4;}
 const ui={hud:$('hud'),menu:$('menu'),pause:$('pause-menu'),results:$('results'),speed:$('speedometer'),count:$('countdown'),touch:$('touch-controls')};
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,1800);let renderer,world,cameraMode=0,best=Infinity,previousState='',loaded=false,engine,audioOn=false,guideEnabled=true,tyreRig,previousPitPhase='idle';
 try{best=Number(localStorage.getItem('f1-3d-best-course-v4'))||Infinity;}catch{}

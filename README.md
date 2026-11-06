@@ -80,3 +80,26 @@ The active garage now uses two 6m-wide bays per 12m block, 12m structural depth 
 Start remains disabled while assets load, textures upload, shaders compile and three warm-up frames render. Read-only diagnostics expose preparation timing and frame stalls; this is preparation, not a promise of smoothness on every GPU. Trees and tyre barriers crossfade to lower detail and fade out at long range. Geometry-submission tests show ~70% tree and ~87.5% barrier reductions at the starting camera, not measured FPS improvements. Kerbs peak only 2.5cm above the road, and their paved riding area retains road grip.
 
 This combined refinement pass needs real browser visual/performance verification, particularly dither transitions, loading behaviour, expanded-garage camera clearance and service controls.
+
+### Elevation and pit presentation pass
+
+The original 2.71 km course now climbs through a linked opening sector, crests
+at 26 m and descends into slower corner sequences. It is not a traced real track.
+The car, racing line, kerbs, runoff, barriers and fences share the elevation data.
+
+S applies progressive braking. Holding it after stopping keeps the car stationary.
+After a 0.35 s stationary dwell, release S and press it again to select reverse;
+W brakes reverse travel before driving forward. HUD bars show pedal pressure.
+The pit transit lane is 6 m wide, with an 11.5 m paved service area beside the
+level pit straight. Garage geometry, collision bounds and service routing move
+together. Tyre service and garage entry temporarily override the selected camera;
+the selected driving camera returns after tyre service. The existing jack,
+wheel-removal/refitting, socket motion and compound change are real animations;
+no skeletal crew animation was added.
+
+For local visual QA only, `/?qa=pit` starts a car aligned in the service box so
+all tyre choices and the garage camera can be inspected without another lap.
+This staging branch is removed in production builds. The normal URL is unchanged.
+`npm run check` covers three laps at 30/60/120 Hz, checkpoint rejection, pit transit,
+garage footprint sweeps, terrain clearance, elevation/grade, braking distances,
+reverse lockout, camera selection, tyre motion and full asset loading.
