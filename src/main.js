@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {prepareRenderer} from './render-preparation.js';
 import {vehicleGroundPose} from './vehicle-ground.js';
 import {pitServiceView} from './pit-service.js';
+import {pitGuidance} from './pit-guidance.js';
 import {createTyreServiceRig,updateTyreServiceRig} from './tyre-visuals.js';
 import {updateServiceTools} from './service-tools.js';
 import {updateWheelRig,wheelSpinDelta} from './vehicle-visuals.js';
@@ -69,7 +70,10 @@ function animate(now){requestAnimationFrame(animate);const frameMs=now-last,dt=M
  const serviceVisual=updateTyreServiceRig(tyreRig,race.pitService);const groundPose=vehicleGroundPose(c);world.car.position.y=groundPose.height+serviceVisual.jackHeight;world.car.rotation.set(groundPose.pitch,c.yaw+Math.PI,groundPose.roll,'YXZ');updateServiceTools(world.serviceTools,c,serviceVisual);
  if(previousPitPhase==='changing'&&race.pitService.phase==='released')clearInput();previousPitPhase=race.pitService.phase;
  const pitView=pitServiceView(race.pitService,c,{raceState:race.state});$('pit-service').classList.toggle('hidden',!pitView.visible);$('pit-choices').classList.toggle('hidden',!pitView.showChoices);for(const button of document.querySelectorAll('[data-pit-choice]'))button.disabled=!pitView.canChoose;
- $('pit-instruction').textContent=pitView.active?pitView.phaseLabel:pitView.canChoose?'Ready. Choose fresh tyres or end the session.':pitView.message;
+ const guidance=pitGuidance(race.pitService,c);
+ $('pit-instruction').textContent=pitView.active?pitView.phaseLabel:guidance.message;$('pit-detail').textContent=guidance.detail;
+ $('pit-service').style.setProperty('--pit-color',guidance.color);for(const item of document.querySelectorAll('[data-pit-step]')){const step=Number(item.dataset.pitStep);item.classList.toggle('current',step===guidance.step);item.classList.toggle('complete',step<guidance.step);if(step===guidance.step)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');}
+ world.pitApproach.update(race);
  $('pit-progress').classList.toggle('hidden',!pitView.active);$('pit-progress').firstElementChild.style.width=`${pitView.progress*100}%`;
  $('tyre-compound').textContent=pitView.compound;$('tyre-compound').style.color=pitView.color;$('tyre-wear').textContent=`WEAR ${Math.round(pitView.wear*100)}%`;
  forward.set(Math.sin(c.yaw),0,Math.cos(c.yaw));right.set(Math.cos(c.yaw),0,-Math.sin(c.yaw));
@@ -85,7 +89,7 @@ function animate(now){requestAnimationFrame(animate);const frameMs=now-last,dt=M
  if(cameraMode===1&&race.state!=='ready')camera.position.copy(desired);else camera.position.lerp(desired,1-Math.exp(-dt*6));camera.lookAt(look);camera.fov=58+(race.state==='racing'?Math.abs(c.speed)*.15:0);camera.updateProjectionMatrix();
  const gateIndex=(race.nextCheckpoint*60)%track.length,gate=track[gateIndex];world.gate.position.set(gate.x,0,gate.z);world.gate.rotation.y=heading(gateIndex);world.gate.visible=race.state==='racing';
  $('lap').innerHTML=`${String(Math.min(race.laps.length+1,3)).padStart(2,'0')}<span>/ 03</span>`;$('time').textContent=formatTime(race.lapTime);$('speed').textContent=Math.round(Math.abs(c.speed)*3.6).toString().padStart(3,'0');$('gear').textContent=c.speed<-.3?'R':c.speed<1?'N':Math.min(7,Math.floor(c.speed/11)+1);$('rpm').firstElementChild.style.width=`${(Math.abs(c.speed)%11)/11*100}%`;
- $('status').textContent=race.state==='racing'?(race.inPit?'PIT LANE · PARK IN HIGHLIGHTED GARAGE':race.contact?'BARRIER CONTACT':race.offroad?'OFF TRACK · REDUCED GRIP':`GATE ${String(race.nextCheckpoint).padStart(2,'0')} / 12`):'';ui.count.textContent=Math.ceil(race.countdown)||'GO';
+ $('status').textContent=race.state==='racing'?(race.inPit?'PIT LANE · 60 KM/H · FOLLOW SERVICE GUIDE':race.contact?'BARRIER CONTACT':race.offroad?'OFF TRACK · REDUCED GRIP':`GATE ${String(race.nextCheckpoint).padStart(2,'0')} / 12`):'';ui.count.textContent=Math.ceil(race.countdown)||'GO';
  if(engine){engine.osc.frequency.setTargetAtTime(55+Math.abs(c.speed)*5,engine.ctx.currentTime,.08);engine.gain.gain.setTargetAtTime(audioOn&&race.state==='racing'?.026:0,engine.ctx.currentTime,.1);}
  const cue=updateRacingGuide(world.guide,race,clock,guideEnabled),braking=$('brake-cue');braking.classList.toggle('hidden',!cue.active);braking.style.setProperty('--urgency',String(cue.intensity));
  if(cue.active){$('brake-target').textContent=`SLOW TO ${Math.round((cue.corner?.targetSpeed??cue.recommendedSpeed)*3.6)} KM/H`;$('brake-distance').textContent=cue.corner&&cue.corner.distance>8?`${Math.round(cue.corner.distance)} M TO CORNER`:'EASE OFF / BRAKE';}
