@@ -2,8 +2,8 @@
 export const TRACK_WIDTH = 17;
 export {CONTROL_POINTS} from './course.js';
 import {CONTROL_POINTS} from './course.js';
-export const PIT = {laneX:230,buildingX:241,minZ:-167,maxZ:45,garageZ:-73.5};
-export const inPitArea=(x,z)=>x>216&&x<245&&z>PIT.minZ&&z<PIT.maxZ;
+export {PIT,inPitArea} from './pit-lane.js';
+import {PIT,inPitArea} from './pit-lane.js';
 const N = 720;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const angleDiff = (a,b) => Math.atan2(Math.sin(a-b),Math.cos(a-b));
@@ -71,10 +71,12 @@ export class Race {
      c.speed=Math.min(0,c.speed+(accel+drag)*dt);
    }else if(input.brake&&!input.gas)c.speed=-10*dt;
    else if(input.gas&&!input.brake)c.speed=17*dt;
-   c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?18:71);
+   c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?(60/3.6):71);
    // Positive input is driver-right. Reverse travel naturally reverses yaw rate.
    c.yaw-=c.steer*(1.3/(1+Math.abs(c.speed)*.018))*clamp(c.speed/6,-1,1)*dt;
+   const previousX=c.x;
    c.x+=Math.sin(c.yaw)*c.speed*dt;c.z+=Math.cos(c.yaw)*c.speed*dt;
+   if(c.z>PIT.wallStartZ&&c.z<PIT.wallEndZ&&Math.abs(c.x-PIT.wallX)<1.1){c.x=PIT.wallX+(previousX<PIT.wallX?-1.1:1.1);c.speed*=.35;this.contact=true;}
    const after=nearest(c.x,c.z);
    if(after.distance>15&&!inPitArea(c.x,c.z)){
      const p=track[after.index],h=heading(after.index),side=Math.sign(after.side)||1;
@@ -84,7 +86,7 @@ export class Race {
    if(this.inPit){
      // Buildings and the pit wall are physical bounds. The highlighted garage is open.
      const bay=Math.abs(c.z-PIT.garageZ)<1.05;
-     if(c.x>237.2&&!bay){c.x=237.2;c.speed*=.25;this.contact=true;}
+     if(c.z>-145&&c.z<0&&c.x>237.2&&!bay){c.x=237.2;c.speed*=.25;this.contact=true;}
      if(c.x>241){c.x=241;c.speed=0;}
      if(bay&&c.x>239.2&&Math.abs(c.speed)<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
    }

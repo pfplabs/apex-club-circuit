@@ -1,51 +1,28 @@
 # Verification record
 
-## Passed
-- `npm test`: 24 tests. Includes all GLBs decoded by Three.js GLTFLoader, finite geometry, exactly four wheel pivots, 83 static/animated meshes after material batching and approximately 855,656 triangles.
-- `npm run build`: successful Vite production bundle. Three.js is a large vendor dependency; the size warning is informational.
-- Three laps using only throttle/brake/steer inputs, never teleporting or changing lap counters:
-  - 30 Hz: 1:02.433 / 1:00.800 / 1:00.833.
-  - 60 Hz: 1:02.567 / 1:00.950 / 1:00.950.
-  - 120 Hz: 1:02.617 / 1:01.017 / 1:01.000.
-  - Maximum centerline deviation <1.73 m, road half-width 8.5 m.
-- Physical normal-input pit drive: start grid → pit lane → highlighted garage → stopped `parked` state. Timer remains frozen afterward.
-- Wrong-direction lap, missed checkpoint, index jump, offroad, collision, recovery, restart, countdown and pause checks.
-- Original legacy prototype: 11 tests still pass.
+## Current automated checks
 
-## Browser block, not a pass
+- 42 Node tests pass; production Vite build passes.
+- Actual GLB geometry parses and remains finite after batching, including embedded-texture foliage. Image decoding is mocked in Node, not a GPU rendering pass.
+- Correct steering directions at four camera headings; stable front-wheel axes at 72 rotation samples and five steering angles; forward/reverse spin and S brake-to-reverse tested.
+- Revised 2.089 km circuit: normal-input reference driver completes three laps at 30/60/120 Hz without contacts or offroad frames. Flying laps: 63.033 / 62.950 / 62.883 seconds respectively. Maximum centerline distance 5.669 m on an 8.5 m half-width road.
+- Guidance offsets retain a 3.5 m road margin; speed propagation anticipates turns; 16 meaningful deceleration regions. Road and guardrail loop intersections checked.
+- Normal-input entry taper → pit lane → exit rejoin: 30.100 / 30.367 / 30.500 seconds, no contacts or offroad frames. Lane tracking error below 0.18 m. Physical separator blocks crossings from either side.
+- Garage parking through normal inputs passes at all three rates; stopping freezes the session. Crew and equipment stay clear of the parked bay.
+- Pause, restart, recovery, countdown, missed gates and backwards lap rejection retained.
 
-Managed cloud Chrome reached the app but its WebGL 2 context creation failed: `GL_VENDOR = Disabled`, `GL_RENDERER = Disabled`, `BindToCurrentSequence failed`. The accessible page displayed the explicit renderer error. A standalone Chromium launch was also unavailable because the environment disallows the necessary socket operation. No browser gameplay screenshot or real-time performance result is claimed.
+## Real-browser status
 
-## Required visual QA on a WebGL-enabled browser
+The earlier handling-fix build was rendered and driven on the connected Mac. User confirmed the steering now feels better. This is not confirmation of the latest circuit/environment build. The cloud browser exposes no WebGL context and cannot substitute for Mac visual QA.
 
-1. `npm ci && npm run dev -- --host 127.0.0.1` and open the printed URL.
-2. Confirm car paint/tyres/wings, pit buildings and blue stands load; no console errors, black materials or invisible road.
-3. Start. Countdown freezes driving, then W moves, S brakes then reverses, A/D steer. Check all three C camera modes and wheel direction.
-4. Pause, resume, repeated restart, switch tab and return, resize, and test touch controls if available.
-5. Complete one lap and check timing/checkpoint reset; reverse across line must not count.
-6. Drive into pit lane on the left. Turn into yellow garage and stop; session must end. Restart must reset timer, car and laps.
-7. Inspect shadow resolution, grass/asphalt scale, clipping, lighting, circuit/sky composition, menu readability and frame rate. The browser scene is an initial implementation, with visual/performance refinement expected after this check.
-8. Record any issue against the exact commit, browser and machine.
+Required next checks:
+1. Pull this branch, npm ci, npm run dev. Confirm no missing textures, shader errors or black foliage.
+2. Inspect sloped kerbs, continuous rails, runoff, leaf-card trees, crew, garage props and concrete. Check frame rate, shadows and clipping.
+3. L / LINE toggles speed-aware green/amber/red line. Brake cue must appear before tight corners, hide in pit/reverse/pause/results, and remain legible.
+4. Drive one clean lap and verify timing and checkpoint reset. Old course records are separately stored.
+5. Enter tapered pit on the left, drive through to exit, and separately park in the highlighted garage to end.
+6. Check A/D, S reverse, all C cameras, repeated pause/restart, browser blur and touch controls.
 
-## Genuine gameplay trailer capture
+## Gameplay trailer
 
-Only record after graphical QA passes. Do not substitute Blender renders or the reference image for gameplay footage.
-
-Suggested 30–45 second edit:
-- 4s actual game title/start camera.
-- 5s countdown and launch in chase view.
-- 12s steering through a straight and sweeping corner, then switch to cockpit.
-- 8s approach the pit lane, slow down, steer into the highlighted garage.
-- 4s stopped session result.
-
-Use the browser/OS recording tool on the QA machine. Preserve raw recording before editing. Include “WIP gameplay” until visual QA is complete. Label cuts/time compression transparently. No external game video or synthesized action.
-
-The updated browser environment uses locally stored Poly Haven CC0 photographic HDR/albedo/normal/roughness assets (see `public/assets/CREDITS.md`). Image decoding, GPU shading and final visual fidelity still need the WebGL browser check. The geometry-only automated test intentionally skips image decoding.
-
-Handling regression (user feedback): driver-left/right is tested with a Three.js forward-facing camera at four headings. Steering and wheel spin now use separate pivots; 72 spin samples at five steering angles verify stable axle/centers. S brakes to neutral then reverses; W brakes reversing motion before accelerating forward. The pit is correctly described as on the driver's left.
-
-## Revised circuit and guidance
-
-The revised 2.089 km course has 63-second flying laps in a normal-input reference driver at 30/60/120 Hz. Each run completes three laps without road departures or contacts. Road and guardrail offset loops are checked for self-intersection. A smooth constrained racing line remains at least 3.5 m inside road edges. Backward speed propagation places deceleration ahead of turns. L / LINE toggles guidance; the line and cue hide in the pit, reverse, pause and results. Old-course best times are not reused.
-
-Mac QA still needed: verify line visibility, amber/red anticipation, readability of animated brake panel, actual corner braking, clean lap timing and pit entry/garage completion. Existing user confirmation applies to prior corrected steering, not this new circuit.
+Do not record the final trailer until the user explicitly confirms satisfaction. Once approved, capture only genuine browser gameplay after visual QA. Preserve raw footage. Suggested edit: title camera, real countdown/launch, straight and braking/esses, cockpit, pit entry and garage finish. Label any WIP and time compression honestly. Blender renders are asset/scene previews, never gameplay.

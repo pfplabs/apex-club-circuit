@@ -9,3 +9,5 @@ All downloaded images below are by Poly Haven contributors and distributed under
 Downloaded from Poly Haven's official API-listed download URLs on 2026-11-05. Texture files were checked against the official API MD5 values. Assets are served locally, not fetched from third parties at game runtime.
 
 The car, pit building and grandstand geometry are original Blender reconstructions for this project. The runtime circuit, raised kerbs, barriers, trees, terrain and interface are original code. No original Maya/OpenGL model or texture was available.
+
+The oak tree, bark/leaf textures, pit equipment and three crew are original procedural Blender assets created for this project. These are authored approximations, not scanned/photogrammetry assets. Editable sources and reproducible scripts are in blender/foliage, blender/pit-props and blender/pit-crew. Crew suits follow the supplied white/yellow reference palette. No third-party human model or likeness was used.

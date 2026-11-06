@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {addFoliage} from './foliage.js';
+import {createSculptedKerbs,addBrakingDetails,addPitLaneDetails,addArmco} from './track-details.js';
 import {createRacingGuide} from './racing-guide.js';
 import {createWheelRig} from './vehicle-visuals.js';
 import {track,heading,TRACK_WIDTH,trackLength,PIT} from './simulation.js';
@@ -28,28 +30,31 @@ export async function createWorld(scene,renderer,options={}){
  ribbon(-14.8,14.8,.015,mat('#77766b',{roughness:1}),scene);ribbon(-11.2,11.2,.02,mat('#93a269',{roughness:1}),scene);
  const asphalt=texture('road');const roadMaterial=mat('#b4b9b2',{map:asphalt,roughness:.96});ribbon(-TRACK_WIDTH/2,TRACK_WIDTH/2,.035,roadMaterial,scene);
  const white=mat('#f4f0d8',{roughness:.8}),red=mat('#c83d30',{roughness:.9});ribbon(-8.1,-7.94,.045,white,scene);ribbon(7.94,8.1,.045,white,scene);
- // Kerbs are individual raised geometry, alternating red and white.
- for(let i=0;i<track.length;i+=2){const p=track[i],q=track[(i+2)%track.length],h=Math.atan2(q.x-p.x,q.z-p.z),length=Math.hypot(q.x-p.x,q.z-p.z);for(const side of [-1,1]){const k=mesh(new THREE.BoxGeometry(.85,.12,length+.08),(Math.floor(i/4)%2)?white:red,scene,(p.x+q.x)/2+Math.cos(h)*side*8.85,.09,(p.z+q.z)/2-Math.sin(h)*side*8.85);k.rotation.y=h;}}
- const rail=mat('#aeb8b5',{metalness:.7,roughness:.48});for(const side of [-1,1]){for(let i=0;i<track.length;i+=8){const p=track[i],h=heading(i);if(side===1&&p.x>205&&p.z>PIT.minZ-10&&p.z<PIT.maxZ+10)continue;mesh(new THREE.BoxGeometry(.16,1.2,.16),rail,scene,p.x+Math.cos(h)*side*15.5,.6,p.z-Math.sin(h)*side*15.5);const q=track[(i+8)%track.length],len=Math.hypot(q.x-p.x,q.z-p.z);for(const y of [.68,1.05]){const r=mesh(new THREE.BoxGeometry(.12,.16,len+1),rail,scene,(p.x+q.x)/2+Math.cos(h)*side*15.5,y,(p.z+q.z)/2-Math.sin(h)*side*15.5);r.rotation.y=h;}}}
+ createSculptedKerbs(scene);
+ addArmco(scene);
  // Finish line and grid on the opening straight.
  const start=track[0],h=heading(0);for(let x=-8;x<8;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
  for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
  const metal=mat('#303e41',{metalness:.6,roughness:.5});for(const x of [start.x-12,start.x+12])mesh(new THREE.BoxGeometry(.5,7,.5),metal,scene,x,3.5,start.z+3);
  mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('F1 2013  /  CLUB CIRCUIT','#142021','#f0f64c',22,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
- // Pit apron, entry wall and lane markings.
- const apronGeometry=new THREE.PlaneGeometry(26,215);const apronUV=apronGeometry.attributes.uv;for(let i=0;i<apronUV.count;i++)apronUV.setXY(i,apronUV.getX(i)*26/17,apronUV.getY(i)*215/4);const apron=mesh(apronGeometry,roadMaterial,scene,229,.065,-60);apron.rotation.x=-Math.PI/2;apron.castShadow=false;
- for(let z=-163;z<45;z+=8)mesh(new THREE.BoxGeometry(.15,.03,4),white,scene,222,.08,z);
- const trees=new THREE.Group();scene.add(trees);const trunkMat=mat('#594c3a'),leaf=mat('#40543a',{roughness:.94});const foliageGeometry=new THREE.IcosahedronGeometry(1,1);for(let i=0;i<230;i++){const a=rnd()*Math.PI*2,d=340+rnd()*160,x=Math.sin(a)*d,z=Math.cos(a)*d;mesh(new THREE.CylinderGeometry(.22,.5,8,7),trunkMat,trees,x,4,z);for(let j=0;j<8;j++){const angle=j*2.399,spread=j?2.7:0;const t=mesh(foliageGeometry,leaf,trees,x+Math.sin(angle)*spread,7.5+(j%3)*2,z+Math.cos(angle)*spread);t.scale.set(2.6+rnd()*1.6,2.5+rnd()*2,2.4+rnd()*1.6);t.rotation.set(rnd(),rnd()*6,rnd());}}
+ addPitLaneDetails(scene,roadMaterial,sign);
  const terrain=new THREE.PlaneGeometry(2000,2000,100,100);terrain.rotateX(-Math.PI/2);const terrainPos=terrain.attributes.position;for(let i=0;i<terrainPos.count;i++){const x=terrainPos.getX(i),z=terrainPos.getZ(i),d=Math.hypot(x,z);const height=Math.max(0,Math.min(1,(d-380)/150))*(35+Math.sin(x*.012)*Math.cos(z*.009)*35+Math.abs(Math.sin(x*.006+z*.008))*85+Math.sin(x*.026+z*.03)*8);terrainPos.setY(i,height*.24-.1);}terrain.computeVertexNormals();const mountains=mesh(terrain,groundMaterial,scene);mountains.castShadow=false;
  // Next gate: subtle illuminated side posts rather than a wall across the road.
  const gate=new THREE.Group();const glow=new THREE.MeshBasicMaterial({color:'#eafa51'});for(const side of [-1,1]){const p=mesh(new THREE.CylinderGeometry(.13,.13,2,6),glow,gate,side*7.2,1,0);p.castShadow=false;}scene.add(gate);
  const loader=new GLTFLoader();
- const [carAsset,pitAsset,standAsset]=await Promise.all(['car.glb','pit-building.glb','grandstand.glb'].map(p=>loader.loadAsync(`${base}${p}`)));
+ const [carAsset,pitAsset,standAsset,treeAsset,propsAsset,crewAsset]=await Promise.all(['car.glb','pit-building.glb','grandstand.glb','oak-realistic.glb','pit-props.glb','pit-crew.glb'].map(p=>loader.loadAsync(`${base}${p}`)));
  const car=carAsset.scene;car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
- const buildings=new THREE.Group();scene.add(buildings);for(let i=0;i<11;i++){const pit=pitAsset.scene.clone();pit.position.set(PIT.buildingX,0,-135+i*12);pit.rotation.y=-Math.PI/2;buildings.add(pit);}for(let i=0;i<10;i++){const stands=standAsset.scene.clone();stands.position.set(184,0,-135+i*12);stands.rotation.y=Math.PI/2;buildings.add(stands);}buildings.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+ addFoliage(scene,treeAsset,track);
+ // Darken and break up the previously featureless concrete apron and walls.
+ const concreteMap=texture('road');concreteMap.repeat.set(8,8);
+ pitAsset.scene.traverse(o=>{if(o.isMesh&&o.material.name==='Concrete'){o.material=o.material.clone();o.material.color.set('#777d79');o.material.map=concreteMap;o.material.roughness=.95;}});
+ const buildings=new THREE.Group();scene.add(buildings);for(let i=0;i<11;i++){const pit=pitAsset.scene.clone();pit.position.set(PIT.buildingX,0,-135+i*12);pit.rotation.y=-Math.PI/2;buildings.add(pit);}for(let i=0;i<10;i++){const stands=standAsset.scene.clone();stands.position.set(184,0,-135+i*12);stands.rotation.y=Math.PI/2;buildings.add(stands);}for(const z of [-123,-99,-75,-51,-27]){const props=propsAsset.scene.clone();props.position.set(241,0,z);props.rotation.y=-Math.PI/2;buildings.add(props);}
+ const crew=crewAsset.scene;crew.position.set(241,0,-75);crew.rotation.y=-Math.PI/2;buildings.add(crew);
+ const garageLight=new THREE.PointLight('#fff1d1',22,16,2);garageLight.position.set(240,2.7,PIT.garageZ);scene.add(garageLight);
+ buildings.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
  for(let j=0;j<10;j++){const board=sign(j%2?'OPEN WHEEL  /  2013':'APEX MOTORSPORT','#f0ed38','#202e28',11,1.8);board.position.set(194,1.4,-139+j*15);board.rotation.y=Math.PI/2;scene.add(board);}
- const parking=mesh(new THREE.PlaneGeometry(9,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,237,.125,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',8,1);garageLabel.position.set(237.9,3.4,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);const pitEntry=sign('←  PIT LANE','#173328','#f4ff60',7,1.3);pitEntry.position.set(225,2.2,-158);pitEntry.rotation.y=Math.PI;scene.add(pitEntry);
- const guide=createRacingGuide(scene);
+ const parking=mesh(new THREE.PlaneGeometry(9,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,237,.125,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',8,1);garageLabel.position.set(237.9,3.4,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);
+ const guide=createRacingGuide(scene);addBrakingDetails(scene,guide.advice,sign);
  const wheelRig=createWheelRig(car);const wheels=wheelRig.map(item=>item.wheel);
  // Photographic CC0 HDR lighting and physically based photographic surface maps.
  // The no-GPU geometry test supplies no renderer and therefore skips image decoding.
@@ -63,6 +68,6 @@ export async function createWorld(scene,renderer,options={}){
    }
  }
  // Batch static meshes by material; preserve the animated car, guide and sky.
- const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate||a===guide.group)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
+ const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate||a===guide.group)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv','color'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
  return {car,gate,wheels,wheelRig,guide,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
 }
