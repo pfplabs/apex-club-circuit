@@ -1,4 +1,5 @@
 import {roadSurface,surfaceVertex,surfaceTrack,ROAD_LANES} from './course.js';
+import {refreshPitSurfaceMaps} from './pit-layout.js';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
@@ -14,6 +15,7 @@ import {addSpectators} from './spectators.js';
 import {addTrackSafety} from './track-safety.js';
 import {createPitApproach} from './pit-guidance.js';
 import {createRacingGuide} from './racing-guide.js';
+import {refineWheelAppearance} from './wheel-appearance.js';
 import {createWheelRig} from './vehicle-visuals.js';
 import {track,heading,TRACK_WIDTH,trackLength,PIT} from './simulation.js';
 const rnd=(()=>{let s=31273;return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};})();
@@ -27,7 +29,7 @@ function texture(kind){
 function mesh(geo,material,scene,x=0,y=0,z=0){const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
 function ribbon(left,right,height,material,scene){const p=[],uv=[],idx=[];let travel=0;for(let i=0;i<=surfaceTrack.length;i++){if(i)travel+=Math.hypot(surfaceTrack[i%surfaceTrack.length].x-surfaceTrack[(i-1)%surfaceTrack.length].x,surfaceTrack[i%surfaceTrack.length].z-surfaceTrack[(i-1)%surfaceTrack.length].z);const t=surfaceTrack[i%surfaceTrack.length],a=heading(i%surfaceTrack.length),nx=Math.cos(a),nz=-Math.sin(a);const l=surfaceVertex(i,left),r=surfaceVertex(i,right);p.push(l.x,l.y+height,l.z,r.x,r.y+height,r.z);uv.push(material.name==='Continuous asphalt'?(left+TRACK_WIDTH/2)/TRACK_WIDTH:0,travel/4,material.name==='Continuous asphalt'?(right+TRACK_WIDTH/2)/TRACK_WIDTH:1,travel/4);if(i<surfaceTrack.length){const k=i*2;idx.push(k,k+2,k+1,k+1,k+2,k+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=mesh(g,material,scene);m.castShadow=false;return m;}
 function terrainUV(g){const p=g.attributes.position,uv=[];for(let i=0;i<p.count;i++)uv.push((p.getX(i)+1000)/2000,(1000-p.getZ(i))/2000);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));return g;}
-function sign(text,bg='#161e20',fg='#eafa3c',w=12,h=2){const c=document.createElement('canvas');c.width=1024;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,1024,128);x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';x.font='bold 74px Arial';const tw=x.measureText?.(text).width??0;if(tw>950)x.font=`bold ${Math.floor(74*950/tw)}px Arial`;x.fillText(text,512,67);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:tex,side:THREE.DoubleSide,roughness:.9}));}
+function sign(text,bg='#161e20',fg='#eafa3c',w=12,h=2){const c=document.createElement('canvas');c.width=1024;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,1024,128);x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';x.font='bold 74px Arial';const tw=x.measureText?.(text).width??0;if(tw>950)x.font=`bold ${Math.floor(74*950/tw)}px Arial`;x.fillText(text,512,67);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:tex,side:THREE.DoubleSide,roughness:.9,userData:{keepColorMap:true}}));}
 export async function createWorld(scene,renderer,options={}){
  let resources=0;const resourceLoaded=stage=>options.onProgress?.({stage,done:++resources,total:17});
  const base=options.assetBase??`${import.meta.env?.BASE_URL??'/'}assets/`;
@@ -60,7 +62,7 @@ export async function createWorld(scene,renderer,options={}){
  const [carAsset,pitAsset,standAsset,treeAsset,propsAsset,crewAsset]=await Promise.all(['car.glb','pit-building.glb','grandstand.glb','oak-realistic.glb','pit-props.glb','pit-crew.glb'].map(p=>loader.loadAsync(`${base}${p}`).then(asset=>{resourceLoaded('3D MODELS');return asset;})));
  const sponsorMaterial=renderer?await loadSponsorMaterial(`${base}sponsors/sponsor-atlas.png`,Math.min(8,renderer.capabilities.getMaxAnisotropy())):new THREE.MeshStandardMaterial({name:'Fictional sponsor atlas'});
  resourceLoaded('SPONSOR GRAPHICS');
- const car=carAsset.scene;refineCarMaterials(car);addCarSponsors(car,sponsorMaterial);car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
+ const car=carAsset.scene;refineCarMaterials(car);refineWheelAppearance(car);addCarSponsors(car,sponsorMaterial);car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
  const woodland=addFoliage(scene,treeAsset,track);
  // Darken and break up the previously featureless concrete apron and walls.
  const concreteMap=texture('road');concreteMap.repeat.set(8,8);
@@ -94,6 +96,7 @@ export async function createWorld(scene,renderer,options={}){
      albedo.colorSpace=THREE.SRGBColorSpace;material.color.set(kind==='grass'?'#728765':'#ffffff');material.map=albedo;material.normalMap=normal;material.roughnessMap=roughness;material.normalScale.setScalar(kind==='asphalt'?.35:kind==='wood'?.25:.55);material.roughness=1;material.needsUpdate=true;
    }
  }
+ refreshPitSurfaceMaps(scene,roadMaterial);
  // Batch static meshes by material; preserve the animated car, guide and sky.
  const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate||a===guide.group||a===serviceTools.group||a===pitApproach.group)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv','color'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
  return {spectators,safety,pitApproach,brakingDetails,woodland,car,gate,wheels,wheelRig,guide,serviceTools,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};

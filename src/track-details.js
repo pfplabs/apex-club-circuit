@@ -1,5 +1,6 @@
 import {TRACK_WIDTH} from './course.js';
 import {KERB_PROFILE} from './surface-profile.js';
+import {addPitLayout} from './pit-layout.js';
 import {addTyreBarrierLOD} from './tyre-lod.js';
 import * as THREE from 'three';
 import {track,heading} from './simulation.js';
@@ -37,10 +38,11 @@ export function addBrakingDetails(scene,advice,makeSign){
 }
 
 export function addPitLaneDetails(scene,roadMaterial,makeSign){
+ addPitLayout(scene,roadMaterial,makeSign);
  const positions=[],uv=[],stripe=[],white=new THREE.MeshStandardMaterial({color:'#eeeae0',roughness:.86}),concrete=new THREE.MeshStandardMaterial({color:'#9b9f96',roughness:.95});
  let distance=0;
  for(let z=PIT.minZ;z<PIT.maxZ;z+=2){const [a,b]=pitEdges(z),[c,d]=pitEdges(z+2);positions.push(a,.035,z,c,.035,z+2,b,.035,z,b,.035,z,c,.035,z+2,d,.035,z+2);uv.push(a/17,distance/4,c/17,(distance+2)/4,b/17,distance/4,b/17,distance/4,c/17,(distance+2)/4,d/17,(distance+2)/4);distance+=2;
-  if(z%8===-7||Math.abs(z%8)<2){const x=pitCenterX(z),q=pitCenterX(z+3);stripe.push(x-.07,.073,z,q-.07,.073,z+3,x+.07,.073,z,x+.07,.073,z,q-.07,.073,z+3,q+.07,.073,z+3);}
+  if((z<-145||z>8)&&(z%8===-7||Math.abs(z%8)<2)){const x=pitCenterX(z),q=pitCenterX(z+3);stripe.push(x-.07,.073,z,q-.07,.073,z+3,x+.07,.073,z,x+.07,.073,z,q-.07,.073,z+3,q+.07,.073,z+3);}
  }
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const apron=new THREE.Mesh(geo,roadMaterial);apron.receiveShadow=true;scene.add(apron);
  const lines=new THREE.BufferGeometry();lines.setAttribute('position',new THREE.Float32BufferAttribute(stripe,3));lines.computeVertexNormals();scene.add(new THREE.Mesh(lines,new THREE.MeshStandardMaterial({color:'#ddd7bd',side:THREE.DoubleSide,roughness:.9})));

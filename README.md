@@ -112,7 +112,7 @@ Grass, verge and runoff now occupy adjoining strips instead of full-width overla
 
 `npm run check` includes full-width road/contact sampling, seam continuity, rendered grass/asphalt raycasts and ordinary-control pit transit at 30/60/120 Hz. Development previews accept `?qa=road&at=100` or `?qa=road&at=250` for repeatable hill views with a frame-time readout; production builds remove this fixture. The short stationary preview samples are recorded in `evidence/continuous-road-qa.json`; they do not establish full-lap or multi-game performance.
 
-Integration note: based on GitHub commit `3713e3a`. Newer uncommitted MacBook wheel/pit work was unavailable and is not included. Reconcile changes in `main.js`, `track-details.js` and `vehicle-ground.js` when that work is brought across.
+Historical integration note: the initial hill pass was based on `3713e3a` and excluded the then-uncommitted MacBook work. That saved work is now integrated from snapshot `7cf6801`; see below.
 
 ### Follow-up: hill rocking at speed
 
@@ -121,3 +121,11 @@ The initial clearance fix left twisted full-width road quads and fixed-step rend
 Full-lap contact sweeps at 108/180/252 km/h reduced peak vertical acceleration from 66/104/154 to 8.5/14.6/19.9 m/s² and peak pitch acceleration from 48/74/125 to 1.2/1.5/2.2 rad/s². These are controlled geometric probes, not a suspension model or claims that every corner is drivable at those speeds. Ordinary throttle/brake/steering tests also drive the opening climb and esses at approximately 144 km/h for 18 seconds at 30, 60 and 120 Hz, with zero barrier contacts or offroad frames.
 
 For a repeatable development driving preview, use `?qa=road&at=68&drive=1`; it follows normal controls for 18 seconds then brakes. Use the plain URL for manual driving. The test suite now includes 96 passing tests, 28,800 road-contact samples and rendering interpolation checks at 60/100/144 Hz.
+
+### MacBook wheel/pit snapshot integration
+
+Merged saved snapshot `7cf6801e748db51124e721f86e7e3a26a9f4cb2f` with hill-motion revision `563b777`. The combined build retains the 20 m circuit, smoothed hill geometry and exact tyre contact, render interpolation, refined wheel visuals, separated pit transit/working lanes, painted team positions, and Fast/Balanced/Photo graphics controls with texture toggling. Road height stays at 35 mm; pit decorative pavement is 1–2 mm above it, avoiding the old raised overlay mismatch. Graphics metric resets now reset both sets of counters.
+
+Validation: all 108 tests and production build pass, including hill motion, ordinary-control pit routing, wheel contact/pivots/service isolation, and graphics controls. Browser checks completed a soft-tyre service, switched Fast/textures-off then Photo/textures-on, and reported no console errors. The scene budget is 153 meshes: the prior 149 plus four pit material batches.
+
+Limits: this incorporates the saved MacBook snapshot only; any later unsaved or unpushed work is outside this merge. The graphics default is Balanced, with Photo selectable. First-time quality/texture swaps may pause for shader compilation. The existing bundle-size warning remains. Browser checks are short runs, not sustained full-lap GPU benchmarks or a claim of final photorealism.
