@@ -4,6 +4,20 @@ An original Three.js / WebGL 2 browser racing game inspired by the surviving F1 
 
 Current 3D development is on [`feat/blender-3d-reconstruction`](https://github.com/pfplabs/apex-club-circuit/tree/feat/blender-3d-reconstruction). `main` retains the original 2D prototype, also preserved here in `legacy-2d/`. No deployment is claimed by this documentation update.
 
+
+## Gameplay gallery
+
+Actual browser gameplay stills captured on November 6, 2026. These show the work-in-progress 3D build, not reference artwork or offline Blender renders.
+
+![Cockpit racing view with live lap and pedal telemetry](docs/images/f1-24.jpg)
+
+*Cockpit racing view with live lap and pedal telemetry.*
+
+![Exterior orbit view of the car and circuit](docs/images/f1-36.jpg)
+
+*Exterior orbit view of the car and circuit.*
+
+
 ## Run locally
 
 Use Node 20.19+ or 22.12+ and a browser with **WebGL 2 enabled**.
