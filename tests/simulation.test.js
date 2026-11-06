@@ -1,3 +1,4 @@
+import {createAdvisory} from '../src/advisory.js';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {Race,track,nearest,heading,angleDiff,formatTime,trackLength} from '../src/simulation.js';
 function running(){const r=new Race();r.start();for(let i=0;i<61;i++)r.step(.05);return r;}
 function lap(r){for(let i=1;i<=track.length;i++){r.lapTime+=.04;r.recordProgress({index:i%track.length,distance:0});}}
@@ -13,13 +14,21 @@ test('recovery retains lap checkpoint progress',()=>{const r=running();r.car.x+=
 test('restart resets times and count',()=>{const r=running();lap(r);r.reset();assert.equal(r.state,'ready');assert.equal(r.elapsed,0);assert.equal(r.laps.length,0);assert.equal(r.nextCheckpoint,1);});
 test('frame spike clamps simulation delta',()=>{const r=running(),t=r.elapsed;r.step(20,{gas:true});assert(Math.abs(r.elapsed-t-.05)<1e-8);});
 test('format uses milliseconds',()=>{assert.equal(formatTime(61.234),'01:01.234');assert.equal(formatTime(Infinity),'--:--.---');});
-test('physical normal-input driver completes 3 laps at 30, 60 and 120 Hz',()=>{
- for(const hz of [30,60,120]){const r=running();let maxDistance=0;for(let frame=0;frame<hz*240&&r.state==='racing';frame++){
-   const c=r.car,n=nearest(c.x,c.z),target=track[(n.index+8)%720],targetYaw=Math.atan2(target.x-c.x,target.z-c.z),error=angleDiff(targetYaw,c.yaw);
-   let curve=0;for(let ahead=0;ahead<30;ahead+=5)curve=Math.max(curve,Math.abs(angleDiff(heading(n.index+ahead+12),heading(n.index+ahead))));const speed=curve>.22?18:curve>.1?30:48;
-   r.step(1/hz,{gas:c.speed<speed,brake:c.speed>speed+2,steer:Math.max(-1,Math.min(1,-error*5))});maxDistance=Math.max(maxDistance,nearest(c.x,c.z).distance);
+test('physical advisory-line driver completes 3 safe one-minute laps at 30, 60 and 120 Hz',()=>{
+ const advice=createAdvisory(track);
+ for(const hz of [30,60,120]){const r=running();let maxDistance=0,contacts=0;
+ for(let frame=0;frame<hz*260&&r.state==='racing';frame++){
+   const c=r.car,n=nearest(c.x,c.z);let distance=0,j=n.index;
+   while(distance<Math.max(5,c.speed*.27)){distance+=advice.segments[j];j=(j+1)%track.length;}
+   const target=advice.line[j],error=angleDiff(Math.atan2(target.x-c.x,target.z-c.z),c.yaw),speed=advice.speed[n.index];
+   r.step(1/hz,{gas:c.speed<speed,brake:c.speed>speed+1,steer:Math.max(-1,Math.min(1,-error*5))});
+   maxDistance=Math.max(maxDistance,nearest(c.x,c.z).distance);if(r.contact)contacts++;
  }
- assert.equal(r.state,'finished',`${hz} Hz driver failed; gate ${r.nextCheckpoint}, laps ${r.laps.length}`);assert.equal(r.laps.length,3);assert(maxDistance<8.5,`driver left tarmac at ${maxDistance}`);console.log(`${hz} Hz: ${r.laps.map(formatTime).join(' / ')}, max centerline distance ${maxDistance.toFixed(2)} m`);}
+ assert.equal(r.state,'finished',`${hz} Hz driver failed; gate ${r.nextCheckpoint}, laps ${r.laps.length}`);
+ assert.equal(r.laps.length,3);assert.equal(contacts,0);assert(maxDistance<8.5,`driver left tarmac at ${maxDistance}`);
+ assert(r.laps.slice(1).every(t=>t>=55&&t<=75),'flying laps must last about one minute');
+ console.log(`${hz} Hz: ${r.laps.map(formatTime).join(' / ')}, max centerline distance ${maxDistance.toFixed(3)} m; ${contacts} contacts`);
+ }
 });
 test('pit lane is drivable and stopping in the garage ends the session',()=>{
  const r=running(),goals=[[228,-135],[230,-110],[230,-90],[230,-82],[231,-78],[234,-74],[240.8,-73.5]];let g=0;

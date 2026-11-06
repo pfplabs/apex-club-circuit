@@ -26,6 +26,7 @@ The game is self-contained after installation/build: Three.js, all GLBs, texture
 - **S / ↓**: brake, then reverse after stopping (up to 25 km/h)
 - **A D / ← →**: steer
 - **C**: chase, cockpit or orbit camera
+- **L**: toggle the speed-aware racing line and animated braking cue
 - **R**: recover to the nearest point on the circuit
 - **Esc / Space**: pause/resume
 - **M**: toggle synthesized engine sound (off by default)
@@ -33,7 +34,7 @@ The game is self-contained after installation/build: Three.js, all GLBs, texture
 
 Complete three validated laps, or take the pit lane on the left of the opening straight. Slow down and steer into the yellow-highlighted garage marked **PARK HERE / END SESSION**. Stopping inside ends the session. The garage can be used without completing any laps. The game pauses on loss of focus; resume when you return.
 
-The custom 1.57 km circuit has a fast opening straight, sweeping corners and a tighter infield section. A normal-input reference driver takes approximately **61 seconds per flying lap** (start lap ~63 seconds), tested at 30, 60 and 120 Hz. Human times vary. Handling is speed-sensitive arcade driving, not simulation-grade tyre physics. Trackside barriers, pit speed limiting, off-road slowdown and garage bounds are implemented.
+The custom 2.09 km circuit combines a long pit straight, northern hairpin, flowing esses, western back straight and southern technical corners. The optional racing line uses track geometry to suggest positioning and target speed: green to accelerate, amber to prepare, red to brake. Braking advice anticipates corners from actual speed. A normal-input reference driver takes approximately **63 seconds per flying lap** (start lap ~65 seconds), tested at 30, 60 and 120 Hz. Human times vary. Handling is speed-sensitive arcade driving, not simulation-grade tyre physics. Trackside barriers, pit speed limiting, off-road slowdown and garage bounds are implemented.
 
 ## Actual 3D assets
 
@@ -52,9 +53,9 @@ npm test
 npm run build
 ```
 
-24 automated checks pass, including loading all real GLBs into a finite 83-mesh / ~856k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+32 automated checks pass, including loading all real GLBs into a finite 84-mesh / ~856k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
 
-**Browser visual/performance QA is still pending on a WebGL-enabled computer.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
+**The real WebGL browser has rendered and driven the handling-fix build; the user confirmed the corrected steering feels better. The newer track and guidance still need browser visual/performance QA.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
 
 No deployment was performed. The original prototype remains on `main` and is retained here under `legacy-2d/`. See `docs/QA.md` for pending browser checks and recording instructions.
 
@@ -62,4 +63,4 @@ No deployment was performed. The original prototype remains on `main` and is ret
 
 Original project and screenshots: [FH Salzburg F1 2013 portfolio, archived 2024-02-25](https://web.archive.org/web/20240225230049/https://portfolio.fh-salzburg.ac.at/projects/2013-f1-2013). Source screenshots were visually inspected; no original 3D files or textures were available. Modernized reference montage supplied in the working conversation was inspected for updated surface and lighting direction. No image is used as a flat gameplay background.
 
-The updated browser environment uses locally stored Poly Haven CC0 photographic HDR/albedo/normal/roughness assets (see `public/assets/CREDITS.md`). Image decoding, GPU shading and final visual fidelity still need the WebGL browser check. The geometry-only automated test intentionally skips image decoding.
+The updated browser environment uses locally stored Poly Haven CC0 photographic HDR/albedo/normal/roughness assets (see `public/assets/CREDITS.md`). Image decoding, GPU shading and final visual fidelity still need the WebGL browser check. The geometry-only automated test intentionally skips image decoding. Best times are separately stored for this revised course, so the old layout does not leave an impossible record.

@@ -1,6 +1,7 @@
 // Units are meters and seconds. Rendering has no role in simulation or lap validation.
 export const TRACK_WIDTH = 17;
-export const CONTROL_POINTS = [[95,-75],[95,10],[80,80],[30,110],[-40,100],[-90,60],[-110,-5],[-80,-60],[-40,-50],[-25,-85],[30,-110],[78,-105]].map(([x,z])=>[x*2.2,z*2.2]);
+export {CONTROL_POINTS} from './course.js';
+import {CONTROL_POINTS} from './course.js';
 export const PIT = {laneX:230,buildingX:241,minZ:-167,maxZ:45,garageZ:-73.5};
 export const inPitArea=(x,z)=>x>216&&x<245&&z>PIT.minZ&&z<PIT.maxZ;
 const N = 720;

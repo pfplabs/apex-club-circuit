@@ -43,3 +43,9 @@ Use the browser/OS recording tool on the QA machine. Preserve raw recording befo
 The updated browser environment uses locally stored Poly Haven CC0 photographic HDR/albedo/normal/roughness assets (see `public/assets/CREDITS.md`). Image decoding, GPU shading and final visual fidelity still need the WebGL browser check. The geometry-only automated test intentionally skips image decoding.
 
 Handling regression (user feedback): driver-left/right is tested with a Three.js forward-facing camera at four headings. Steering and wheel spin now use separate pivots; 72 spin samples at five steering angles verify stable axle/centers. S brakes to neutral then reverses; W brakes reversing motion before accelerating forward. The pit is correctly described as on the driver's left.
+
+## Revised circuit and guidance
+
+The revised 2.089 km course has 63-second flying laps in a normal-input reference driver at 30/60/120 Hz. Each run completes three laps without road departures or contacts. Road and guardrail offset loops are checked for self-intersection. A smooth constrained racing line remains at least 3.5 m inside road edges. Backward speed propagation places deceleration ahead of turns. L / LINE toggles guidance; the line and cue hide in the pit, reverse, pause and results. Old-course best times are not reused.
+
+Mac QA still needed: verify line visibility, amber/red anticipation, readability of animated brake panel, actual corner braking, clean lap timing and pit entry/garage completion. Existing user confirmation applies to prior corrected steering, not this new circuit.

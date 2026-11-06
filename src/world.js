@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {createRacingGuide} from './racing-guide.js';
 import {createWheelRig} from './vehicle-visuals.js';
 import {track,heading,TRACK_WIDTH,trackLength,PIT} from './simulation.js';
 const rnd=(()=>{let s=31273;return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};})();
@@ -48,6 +49,7 @@ export async function createWorld(scene,renderer,options={}){
  const buildings=new THREE.Group();scene.add(buildings);for(let i=0;i<11;i++){const pit=pitAsset.scene.clone();pit.position.set(PIT.buildingX,0,-135+i*12);pit.rotation.y=-Math.PI/2;buildings.add(pit);}for(let i=0;i<10;i++){const stands=standAsset.scene.clone();stands.position.set(184,0,-135+i*12);stands.rotation.y=Math.PI/2;buildings.add(stands);}buildings.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
  for(let j=0;j<10;j++){const board=sign(j%2?'OPEN WHEEL  /  2013':'APEX MOTORSPORT','#f0ed38','#202e28',11,1.8);board.position.set(194,1.4,-139+j*15);board.rotation.y=Math.PI/2;scene.add(board);}
  const parking=mesh(new THREE.PlaneGeometry(9,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,237,.125,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',8,1);garageLabel.position.set(237.9,3.4,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);const pitEntry=sign('←  PIT LANE','#173328','#f4ff60',7,1.3);pitEntry.position.set(225,2.2,-158);pitEntry.rotation.y=Math.PI;scene.add(pitEntry);
+ const guide=createRacingGuide(scene);
  const wheelRig=createWheelRig(car);const wheels=wheelRig.map(item=>item.wheel);
  // Photographic CC0 HDR lighting and physically based photographic surface maps.
  // The no-GPU geometry test supplies no renderer and therefore skips image decoding.
@@ -61,6 +63,6 @@ export async function createWorld(scene,renderer,options={}){
    }
  }
  // Batch static meshes by material; preserve the animated car, guide and sky.
- const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
- return {car,gate,wheels,wheelRig,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
+ const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate||a===guide.group)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
+ return {car,gate,wheels,wheelRig,guide,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
 }
