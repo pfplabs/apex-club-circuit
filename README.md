@@ -103,3 +103,13 @@ This staging branch is removed in production builds. The normal URL is unchanged
 `npm run check` covers three laps at 30/60/120 Hz, checkpoint rejection, pit transit,
 garage footprint sweeps, terrain clearance, elevation/grade, braking distances,
 reverse lockout, camera selection, tyre motion and full asset loading.
+
+### Continuous hill surface and wider circuit
+
+The original circuit is now 20 m wide (formerly 17 m), approximately 2.752 km long, with a broader uphill opening and revised linked esses. The layout draws on [COTA’s uphill opening and esses](https://www.formula1.com/en/information/united-states-circuit-of-the-americas-austin.5RpZ6us0a3FoaoRxTMpbxI) and [Imola’s rolling, fast corner rhythm](https://www.formula1.com/en/latest/article/imola-all-you-need-to-know-about-the-returning-italian-circuit.6ZtC4Qfqy4WKcUi3rgaDhD), retaining an original footprint and the existing flat pit-straight anchors.
+
+Grass, verge and runoff now occupy adjoining strips instead of full-width overlapping ribbons. Road contact height and grade use the same cross sections and triangles as the asphalt mesh. Terrain-grid vertices are lowered using the lowest nearby road elevation so interpolation cannot push grass through a climb or descent. Road width, kerbs, markings, grip limits and texture scale agree. The pit pavement meets the main straight at the same height; garage slabs retain their raised contact sampling. The personal-best storage key changes with the layout.
+
+`npm run check` includes full-width road/contact sampling, seam continuity, rendered grass/asphalt raycasts and ordinary-control pit transit at 30/60/120 Hz. Development previews accept `?qa=road&at=100` or `?qa=road&at=250` for repeatable hill views with a frame-time readout; production builds remove this fixture. The short stationary preview samples are recorded in `evidence/continuous-road-qa.json`; they do not establish full-lap or multi-game performance.
+
+Integration note: based on GitHub commit `3713e3a`. Newer uncommitted MacBook wheel/pit work was unavailable and is not included. Reconcile changes in `main.js`, `track-details.js` and `vehicle-ground.js` when that work is brought across.

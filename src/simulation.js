@@ -1,7 +1,8 @@
 import {KERB_ALLOWANCE} from './surface-profile.js';
 import {createPitService,selectPitService,stepPitService,advanceTyreWear,tyreGrip} from './pit-service.js';
 // Units are meters and seconds. Rendering has no role in simulation or lap validation.
-export const TRACK_WIDTH = 17;
+export {TRACK_WIDTH} from './course.js';
+import {TRACK_WIDTH} from './course.js';
 export {CONTROL_POINTS} from './course.js';
 import {CONTROL_POINTS} from './course.js';
 export {PIT,inPitArea} from './pit-lane.js';

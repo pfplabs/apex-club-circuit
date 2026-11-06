@@ -1,3 +1,4 @@
+import {roadSurface,roadVertex} from './course.js';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
@@ -24,7 +25,7 @@ function texture(kind){
  const t=new THREE.CanvasTexture(canvas);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
 }
 function mesh(geo,material,scene,x=0,y=0,z=0){const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
-function ribbon(left,right,height,material,scene){const p=[],uv=[],idx=[];let travel=0;for(let i=0;i<=track.length;i++){if(i)travel+=Math.hypot(track[i%track.length].x-track[(i-1)%track.length].x,track[i%track.length].z-track[(i-1)%track.length].z);const t=track[i%track.length],a=heading(i%track.length),nx=Math.cos(a),nz=-Math.sin(a);p.push(t.x+nx*left,t.y+height,t.z+nz*left,t.x+nx*right,t.y+height,t.z+nz*right);uv.push(0,travel/4,1,travel/4);if(i<track.length){const k=i*2;idx.push(k,k+2,k+1,k+1,k+2,k+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=mesh(g,material,scene);m.castShadow=false;return m;}
+function ribbon(left,right,height,material,scene){const p=[],uv=[],idx=[];let travel=0;for(let i=0;i<=track.length;i++){if(i)travel+=Math.hypot(track[i%track.length].x-track[(i-1)%track.length].x,track[i%track.length].z-track[(i-1)%track.length].z);const t=track[i%track.length],a=heading(i%track.length),nx=Math.cos(a),nz=-Math.sin(a);const l=roadVertex(i,left),r=roadVertex(i,right);p.push(l.x,l.y+height,l.z,r.x,r.y+height,r.z);uv.push(0,travel/4,1,travel/4);if(i<track.length){const k=i*2;idx.push(k,k+2,k+1,k+1,k+2,k+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=mesh(g,material,scene);m.castShadow=false;return m;}
 function terrainUV(g){const p=g.attributes.position,uv=[];for(let i=0;i<p.count;i++)uv.push((p.getX(i)+1000)/2000,(1000-p.getZ(i))/2000);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));return g;}
 function sign(text,bg='#161e20',fg='#eafa3c',w=12,h=2){const c=document.createElement('canvas');c.width=1024;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,1024,128);x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';x.font='bold 74px Arial';const tw=x.measureText?.(text).width??0;if(tw>950)x.font=`bold ${Math.floor(74*950/tw)}px Arial`;x.fillText(text,512,67);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:tex,side:THREE.DoubleSide,roughness:.9}));}
 export async function createWorld(scene,renderer,options={}){
@@ -39,14 +40,15 @@ export async function createWorld(scene,renderer,options={}){
  const grass=texture('grass');grass.repeat.set(500,500);const groundMaterial=mat('#b5c684',{map:grass,roughness:1});mesh(new THREE.PlaneGeometry(2000,2000),groundMaterial,scene).rotation.x=-Math.PI/2;
  // Raised grass shoulders carry the fencing; tapered banks join the terrain mesh.
  for(const side of [-1,1]){const positions=[];for(let i=0;i<track.length;i++){const pts=[];for(const j of [i,(i+1)%track.length]){const p=track[j],h=heading(j);for(const o of [22,35]){const x=p.x+Math.cos(h)*side*o,z=p.z-Math.sin(h)*side*o;pts.push([x,o===22?p.y+.008:sampledGroundHeight(x,z)+.008,z]);}}positions.push(...pts[0],...pts[2],...pts[1],...pts[1],...pts[2],...pts[3]);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.computeVertexNormals();const bankMaterial=groundMaterial;bankMaterial.side=THREE.DoubleSide;mesh(terrainUV(g),bankMaterial,scene);}
- terrainUV(ribbon(-22,22,.008,groundMaterial,scene).geometry);
- ribbon(-14.8,14.8,.015,mat('#77766b',{roughness:1}),scene);ribbon(-11.2,11.2,.02,mat('#93a269',{roughness:1}),scene);
- const asphalt=texture('road');const roadMaterial=mat('#b4b9b2',{map:asphalt,roughness:.96});ribbon(-TRACK_WIDTH/2,TRACK_WIDTH/2,.035,roadMaterial,scene);
- const white=mat('#f4f0d8',{roughness:.8}),red=mat('#c83d30',{roughness:.9});ribbon(-8.1,-7.94,.045,white,scene);ribbon(7.94,8.1,.045,white,scene);
+ for(const side of [-1,1])terrainUV(ribbon(side*14.8,side*22,.008,groundMaterial,scene).geometry);
+ const runoffMaterial=mat('#77766b',{roughness:1,side:THREE.DoubleSide}),vergeMaterial=mat('#93a269',{roughness:1,side:THREE.DoubleSide});
+ for(const side of [-1,1]){ribbon(side*11.3,side*14.8,.015,runoffMaterial,scene);ribbon(side*(TRACK_WIDTH/2),side*11.3,.02,vergeMaterial,scene);}
+ const asphalt=texture('road');const roadMaterial=mat('#b4b9b2',{map:asphalt,roughness:.96});roadMaterial.name='Continuous asphalt';groundMaterial.name='Terrain grass';ribbon(-TRACK_WIDTH/2,TRACK_WIDTH/2,.035,roadMaterial,scene);
+ const white=mat('#f4f0d8',{roughness:.8}),red=mat('#c83d30',{roughness:.9});for(const side of [-1,1]){const stripe=ribbon(side*(TRACK_WIDTH/2-.56),side*(TRACK_WIDTH/2-.4),.045,white,scene),p=stripe.geometry.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,roadSurface(p.getX(i),p.getZ(i)).height+.045);stripe.material.side=THREE.DoubleSide;}
  createSculptedKerbs(scene);
  const safety=addTrackSafety(scene);
  // Finish line and grid on the opening straight.
- const start=track[0],h=heading(0);for(let x=-8;x<8;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
+ const start=track[0],h=heading(0);for(let x=-TRACK_WIDTH/2;x<TRACK_WIDTH/2;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
  for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),p.y+.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
  const metal=mat('#303e41',{metalness:.6,roughness:.5});for(const x of [start.x-12,start.x+12])mesh(new THREE.BoxGeometry(.5,7,.5),metal,scene,x,3.5,start.z+3);
  mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('APEX  /  CLUB CIRCUIT','#142021','#f0f64c',10,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
@@ -86,7 +88,7 @@ export async function createWorld(scene,renderer,options={}){
  if(renderer){
    const hdr=await new HDRLoader().loadAsync(`${base}environment/partly-cloudy-sky.hdr`);resourceLoaded('HDR SKY');hdr.mapping=THREE.EquirectangularReflectionMapping;scene.background=hdr;scene.environment=hdr;scene.backgroundIntensity=.85;scene.environmentIntensity=.75;sky.visible=false;clouds.removeFromParent();
    const loader=new THREE.TextureLoader();
-   for(const [kind,material,rx,ry]of [['asphalt',roadMaterial,17/2.1,4/2.1],['grass',groundMaterial,500,500],['wood',woodMaterial,1,1]]){
+   for(const [kind,material,rx,ry]of [['asphalt',roadMaterial,TRACK_WIDTH/2.1,4/2.1],['grass',groundMaterial,500,500],['wood',woodMaterial,1,1]]){
      const [albedo,normal,roughness]=await Promise.all(['albedo','normal','roughness'].map(type=>loader.loadAsync(`${base}textures/${kind}-${type}.jpg`).then(texture=>{resourceLoaded('SURFACE MAPS');return texture;})));
      for(const t of [albedo,normal,roughness]){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
      albedo.colorSpace=THREE.SRGBColorSpace;material.color.set(kind==='grass'?'#728765':'#ffffff');material.map=albedo;material.normalMap=normal;material.roughnessMap=roughness;material.normalScale.setScalar(kind==='asphalt'?.35:kind==='wood'?.25:.55);material.roughness=1;material.needsUpdate=true;

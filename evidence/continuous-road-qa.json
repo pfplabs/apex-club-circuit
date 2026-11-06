@@ -1,0 +1,37 @@
+{
+  "baseCommit": "3713e3ac17957879f81c326eeab1fbce8ee77baa",
+  "widthMeters": 20,
+  "courseLengthMeters": 2751.993,
+  "geometrySamples": 5760,
+  "renderedRaycasts": 720,
+  "seamSamples": 2160,
+  "minimumBaseTerrainClearanceMeters": 0.035,
+  "sceneMeshes": 149,
+  "preview": "http://127.0.0.1:5184/",
+  "browser": "background in-app browser, 1280x720 screenshots",
+  "stationarySamples": [
+    {
+      "trackIndex": 100,
+      "frames": 300,
+      "reportedFps": 100,
+      "worstFrameMs": 11,
+      "framesOver50ms": 0,
+      "drawCalls": 51,
+      "triangles": 645145
+    },
+    {
+      "trackIndex": 250,
+      "frames": 180,
+      "reportedFps": 100,
+      "worstFrameMs": 11,
+      "framesOver50ms": 0,
+      "drawCalls": 47,
+      "triangles": 686805
+    }
+  ],
+  "limitations": [
+    "Short stationary samples only; full-lap frame-rate benchmark outstanding.",
+    "Uncommitted MacBook wheel/pit changes not included.",
+    "Production build retains existing chunk-size warning."
+  ]
+}

@@ -1,12 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {track,nearest,trackLength,TRACK_WIDTH} from '../src/simulation.js';
+import {roadVertex} from '../src/course.js';
 import {createAdvisory,brakeCue} from '../src/advisory.js';
 const a=createAdvisory(track),n=track.length;
 test('course preserves opening and fits compact bounds',()=>{
  assert.equal(n,720);assert.deepEqual(track[0],{x:209,y:0,z:-165});assert(track[1].z>track[0].z);
  for(const axis of ['x','z'])assert(Math.max(...track.map(p=>p[axis]))-Math.min(...track.map(p=>p[axis]))<850);
- assert(trackLength>2700&&trackLength<2720);console.log(`Course: ${trackLength.toFixed(3)} m`);
+ assert(trackLength>2740&&trackLength<2760);console.log(`Course: ${trackLength.toFixed(3)} m`);
 });
 test('ideal line retains paved safety margin at samples and between samples',()=>{
  assert(a.offsets.every(o=>Number.isFinite(o)&&Math.abs(o)<=TRACK_WIDTH/2-3.5));
@@ -33,8 +34,8 @@ test('brake cue anticipates upcoming corners and responds to actual speed',()=>{
 });
 const orient=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);
 const crosses=(a,b,c,d)=>orient(a,b,c)*orient(a,b,d)<-1e-9&&orient(c,d,a)*orient(c,d,b)<-1e-9;
-const ribbon=offset=>track.map((p,i)=>{const prev=track[(i+n-1)%n],next=track[(i+1)%n],h=Math.atan2(next.x-prev.x,next.z-prev.z);return {x:p.x+Math.cos(h)*offset,z:p.z-Math.sin(h)*offset};});
-for(const width of [8.5,15])test(`road/guardrail ±${width} m ribbon has no self or opposite-edge intersections`,()=>{
+const ribbon=offset=>track.map((_,i)=>roadVertex(i,offset));
+for(const width of [TRACK_WIDTH/2,15])test(`road/guardrail ±${width} m ribbon has no self or opposite-edge intersections`,()=>{
  const left=ribbon(-width),right=ribbon(width);
  for(const rail of [left,right])for(let i=0;i<n;i++)for(let j=i+2;j<n;j++){
   if(i===0&&j===n-1)continue;assert(!crosses(rail[i],rail[(i+1)%n],rail[j],rail[(j+1)%n]),`self intersection ${i}/${j}`);
