@@ -1,25 +1,13 @@
 import * as THREE from 'three';
+import {removeChassisComponents} from './car-components.js';
 
 // The GLB batches suspension together with other carbon/metal parts. Remove
 // whole connected rod components, never whole material meshes or wheel parts.
-export function removeLegacySuspension(car){
- car.updateMatrixWorld(true);const inverse=car.matrixWorld.clone().invert();let removed=0;
- car.traverse(mesh=>{
-  if(!mesh.isMesh||!['Carbon suspension','Machined aluminium'].includes(mesh.material?.name))return;
-  for(let a=mesh;a&&a!==car;a=a.parent)if(/^Wheel_/.test(a.name))return;
-  const g=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry.clone(),p=g.attributes.position,n=p.count/3,parent=Array.from({length:n},(_,i)=>i),keys=new Map(),v=new THREE.Vector3(),transform=inverse.clone().multiply(mesh.matrixWorld);
-  const find=i=>{while(parent[i]!==i){parent[i]=parent[parent[i]];i=parent[i];}return i;};
-  for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(transform);const key=v.toArray().map(x=>Math.round(x*1e5)).join(','),tri=Math.floor(i/3);if(keys.has(key))parent[find(tri)]=find(keys.get(key));else keys.set(key,tri);}
-  const groups=new Map();for(let i=0;i<n;i++){const root=find(i);if(!groups.has(root))groups.set(root,{triangles:[],box:new THREE.Box3()});const group=groups.get(root);group.triangles.push(i);for(let j=0;j<3;j++)group.box.expandByPoint(v.fromBufferAttribute(p,i*3+j).applyMatrix4(transform));}
-  const discard=new Set();for(const {box,triangles}of groups.values()){
-   const minX=Math.min(Math.abs(box.min.x),Math.abs(box.max.x)),maxX=Math.max(Math.abs(box.min.x),Math.abs(box.max.x));
-   const nearAxle=[-1.38,1.45].some(z=>box.min.z>z-.39&&box.max.z<z+.39);
-   if(minX<.33&&maxX>.65&&box.min.y>.23&&box.max.y<.67&&nearAxle){triangles.forEach(i=>discard.add(i));removed++;}
-  }
-  if(discard.size){const result=new THREE.BufferGeometry();for(const [name,a]of Object.entries(g.attributes)){const values=[];for(let i=0;i<n;i++)if(!discard.has(i))for(let j=0;j<3;j++)for(let k=0;k<a.itemSize;k++)values.push(a.array[(i*3+j)*a.itemSize+k]);result.setAttribute(name,new THREE.BufferAttribute(new a.array.constructor(values),a.itemSize));}result.computeBoundingBox();result.computeBoundingSphere();mesh.geometry=result;}
-  g.dispose();
- });return removed;
-}
+export function removeLegacySuspension(car){return removeChassisComponents(car,['Carbon suspension','Machined aluminium'],box=>{
+ const minX=Math.min(Math.abs(box.min.x),Math.abs(box.max.x)),maxX=Math.max(Math.abs(box.min.x),Math.abs(box.max.x));
+ return minX<.33&&maxX>.65&&box.min.y>.23&&box.max.y<.67&&[-1.38,1.45].some(z=>box.min.z>z-.39&&box.max.z<z+.39);
+});}
+
 const up=new THREE.Vector3(0,1,0);
 export function createSuspensionRig(car,wheelRig){
  if(wheelRig.suspension)return wheelRig.suspension;

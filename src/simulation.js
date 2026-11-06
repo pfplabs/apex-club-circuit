@@ -1,3 +1,4 @@
+import {collisionOffset} from './runoff-layout.js';
 import {createSectors,completeSector,finishSectorLap} from './sectors.js';
 import {resolvePitGuideContact} from './pit-structures.js';
 import {kerbAllowance,kerbStation} from './kerb-layout.js';
@@ -79,9 +80,9 @@ export class Race {
    if(c.z>PIT.wallStartZ&&c.z<PIT.wallEndZ&&Math.abs(c.x-PIT.wallX)<1.1){c.x=PIT.wallX+(previousX<PIT.wallX?-1.1:1.1);c.speed*=.35;this.contact=true;}
    if(resolvePitGuideContact(c,{x:previousX,z:previousZ}))this.contact=true;
    const after=nearest(c.x,c.z);
-   if(after.distance>15&&!inPitArea(c.x,c.z)){
+   if(after.distance>collisionOffset(after.index,Math.sign(after.side))&&!inPitArea(c.x,c.z)){
      const p=track[after.index],h=heading(after.index),side=Math.sign(after.side)||1;
-     c.x=p.x+Math.cos(h)*side*14.8;c.z=p.z-Math.sin(h)*side*14.8;
+     c.x=p.x+Math.cos(h)*side*(collisionOffset(after.index,side)-.2);c.z=p.z-Math.sin(h)*side*(collisionOffset(after.index,side)-.2);
      c.speed*=.35;this.contact=true;
    }
    if(this.inPit){

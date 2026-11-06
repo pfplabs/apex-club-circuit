@@ -1,3 +1,5 @@
+import {createCockpitWheel} from './cockpit-wheel.js';
+import {addRunoffScenery} from './runoff-scenery.js';
 import {addStartComplex} from './start-complex.js';
 import {addExpandedSponsors,addLongPitEntryPaint} from './expanded-sponsors.js';
 import {createSuspensionRig} from './suspension-visuals.js';
@@ -77,9 +79,9 @@ export async function createWorld(scene,renderer,options={}){
  pitAsset.scene.traverse(o=>{if(o.isMesh&&o.material.name==='Concrete'){o.material=o.material.clone();o.material.color.set('#777d79');o.material.map=concreteMap;o.material.roughness=.95;}});
  const woodMaterial=prepareWoodMaterial(pitAsset.scene);
  const buildings=new THREE.Group();scene.add(buildings);for(let i=0;i<11;i++){const pit=pitAsset.scene.clone();pit.position.set(PIT.buildingX,0,-136.5+i*12);pit.rotation.y=-Math.PI/2;buildings.add(pit);}for(let i=0;i<10;i++){const stands=standAsset.scene.clone();stands.position.set(184,0,-135+i*12);stands.rotation.y=Math.PI/2;buildings.add(stands);}for(const z of [-124.5,-100.5,-76.5,-52.5,-28.5]){const props=propsAsset.scene.clone();props.position.set(PIT.buildingX,0,z);props.rotation.y=-Math.PI/2;buildings.add(props);}
- const spectators=addSpectators(scene);
+ const spectators=addSpectators(scene),runoffScenery=addRunoffScenery(scene,standAsset,roadMaterial,groundMaterial);
  const standDetails=addGrandstandDetails(scene),updateSpectators=spectators.update;
- spectators.update=position=>{updateSpectators(position);standDetails.update(position);};
+ spectators.update=position=>{updateSpectators(position);standDetails.update(position);runoffScenery.update(position);};
  addGarageDoors(scene);
  const crew=crewAsset.scene;crew.position.set(PIT.buildingX,0,-76.5);crew.rotation.y=-Math.PI/2;buildings.add(crew);
  const garageLight=new THREE.PointLight('#fff1d1',22,16,2);garageLight.position.set(240,3.1,PIT.garageZ);scene.add(garageLight);
@@ -95,6 +97,7 @@ export async function createWorld(scene,renderer,options={}){
  const parking=mesh(new THREE.PlaneGeometry(6.3,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,240,.165,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',5.3,.29);garageLabel.position.set(234.38,3.8,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);
  const guide=createRacingGuide(scene);const brakingDetails=addBrakingDetails(scene,guide.advice,sign);
  addServiceBox(scene);const serviceTools=createServiceTools(scene),pitApproach=createPitApproach(scene);
+ createCockpitWheel(car,renderer?await new THREE.TextureLoader().loadAsync(`${base}cockpit-controls.svg`):null);
  const wheelRig=createWheelRig(car);createSuspensionRig(car,wheelRig);const wheels=wheelRig.map(item=>item.wheel);
  // Photographic CC0 HDR lighting and physically based photographic surface maps.
  // The no-GPU geometry test supplies no renderer and therefore skips image decoding.

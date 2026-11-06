@@ -1,3 +1,4 @@
+import {runoffExtra} from './runoff-layout.js';
 import * as THREE from 'three';
 import {track} from './course.js';
 import {terrainHeight} from './terrain.js';
@@ -15,7 +16,8 @@ export function brakingBoardPlacements(){
   i=(i-1+n)%n;const a=track[i],b=track[(i+1)%n],t=1-remaining/segments[i];
   const p={x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t},heading=Math.atan2(b.x-a.x,b.z-a.z);
   if(pitOpening(p,entry.side))throw new Error('Braking board overlaps pit opening');
-  return {...entry,distance,segment:i,t,heading,x:p.x+Math.cos(heading)*entry.side*BOARD.offset,y:p.y,z:p.z-Math.sin(heading)*entry.side*BOARD.offset};
+  const offset=BOARD.offset+runoffExtra(i+t,entry.side);
+  return {...entry,distance,segment:i,t,heading,offset,x:p.x+Math.cos(heading)*entry.side*offset,y:p.y,z:p.z-Math.sin(heading)*entry.side*offset};
  }));
 }
 export function addBrakingBoards(scene){

@@ -1,3 +1,4 @@
+import {inSpectatorReserve} from './runoff-layout.js';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -19,6 +20,7 @@ export function foliagePlacements(track){
  function place(x,z,kind){
   // Reserve the complete pit/garage, spectator stands and access apron.
   if(x>160&&x<285&&z>-195&&z<85)return false;
+  if(inSpectatorReserve(x,z))return false;
   if(distanceToTrack(x,z,track)<34)return false;
   if(positions.some(p=>Math.hypot(p.x-x,p.z-z)<10))return false;
   positions.push({x,z,y:foliageGroundHeight(x,z),rotation:random()*Math.PI*2,scale:.78+random()*.43,kind});return true;

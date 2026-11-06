@@ -1,3 +1,4 @@
+import {runoffExtra} from './runoff-layout.js';
 import {addBrakingBoards} from './braking-boards.js';
 import {TRACK_WIDTH,surfaceTrack,surfaceVertex,ROAD_SUBDIVISIONS} from './course.js';
 import {kerbScale,kerbOffset} from './kerb-layout.js';
@@ -39,6 +40,7 @@ export function addBrakingDetails(scene,advice,makeSign){
  const gravel=new THREE.MeshStandardMaterial({map:gravelTexture(),roughness:1,side:THREE.DoubleSide});
  const boards=addBrakingBoards(scene);
  for(const apex of apexes){const signSide=-Math.sign(advice.curvature[apex])||1;
+  if(Array.from({length:22},(_,j)=>runoffExtra((apex+j-10+720)%720,signSide)).some(v=>v>0))continue;
   const gp=[],guv=[];
   for(let offset=-10;offset<12;offset++){const a=track[(apex+offset+720)%720],b=track[(apex+offset+721)%720],h=Math.atan2(b.x-a.x,b.z-a.z);const q=[point(a,h,signSide*(TRACK_WIDTH/2+1.3),.047),point(b,h,signSide*(TRACK_WIDTH/2+1.3),.047),point(a,h,signSide*14.8,.047),point(b,h,signSide*14.8,.047)];gp.push(...q[0],...q[1],...q[2],...q[2],...q[1],...q[3]);guv.push(0,offset,0,offset+1,4,offset,4,offset,0,offset+1,4,offset+1);
    const length=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.round(length/.86));for(let step=0;step<steps;step++){const t=step/steps;for(let stack=0;stack<3;stack++){const matrix=new THREE.Matrix4().makeTranslation(a.x+(b.x-a.x)*t+Math.cos(h)*signSide*15.1,a.y+(b.y-a.y)*t+.16+stack*.27,a.z+(b.z-a.z)*t-Math.sin(h)*signSide*15.1);transforms.push(matrix);}}
