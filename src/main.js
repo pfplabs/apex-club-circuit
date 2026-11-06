@@ -8,7 +8,7 @@ import './style.css';
 const $=id=>document.getElementById(id),race=new Race(),input={left:false,right:false,gas:false,brake:false};
 const ui={hud:$('hud'),menu:$('menu'),pause:$('pause-menu'),results:$('results'),speed:$('speedometer'),count:$('countdown'),touch:$('touch-controls')};
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,1800);let renderer,world,cameraMode=0,best=Infinity,previousState='',loaded=false,engine,audioOn=false,guideEnabled=true;
-try{best=Number(localStorage.getItem('f1-3d-best-course-v2'))||Infinity;}catch{}
+try{best=Number(localStorage.getItem('f1-3d-best-course-v3'))||Infinity;}catch{}
 $('best').textContent=formatTime(best);$('start').disabled=true;
 try{
  renderer=new THREE.WebGLRenderer({canvas:$('scene'),antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.06).texture;pmrem.dispose();
@@ -18,7 +18,7 @@ function setStateUI(){
  const s=race.state,active=s==='racing'||s==='countdown';ui.menu.classList.toggle('hidden',s!=='ready');ui.pause.classList.toggle('hidden',s!=='paused');ui.results.classList.toggle('hidden',s!=='finished'&&s!=='parked');ui.hud.classList.toggle('hidden',s==='ready');ui.speed.classList.toggle('hidden',!active);ui.touch.classList.toggle('hidden',!active);$('pause').disabled=!active;ui.count.classList.toggle('hidden',s!=='countdown');
  if(s==='finished'||s==='parked'){
    $('results').querySelector('.eyebrow').textContent=s==='parked'?'PARKED IN THE GARAGE':'CHEQUERED FLAG';$('results').querySelector('h1').innerHTML=s==='parked'?'Back in<br>the garage.':'Three laps.<br>Your mark.';
-   const b=Math.min(...race.laps);if(b<best){best=b;try{localStorage.setItem('f1-3d-best-course-v2',String(best));}catch{}}
+   const b=Math.min(...race.laps);if(b<best){best=b;try{localStorage.setItem('f1-3d-best-course-v3',String(best));}catch{}}
    $('best').textContent=formatTime(best);$('lap-results').innerHTML=race.laps.map((t,i)=>`<div><span>LAP ${String(i+1).padStart(2,'0')}</span><strong>${formatTime(t)}</strong></div>`).join('')+`<div><span>RACE TOTAL</span><strong>${formatTime(race.elapsed)}</strong></div>`;
  }
  previousState=s;
@@ -51,7 +51,7 @@ for(const b of document.querySelectorAll('[data-control]')){
  for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>{input[name]=false;b.classList.remove('pressed');});
 }
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-const map=$('map').getContext('2d');function drawMap(){map.clearRect(0,0,260,260);const pt=p=>[130+p.x*.39,132+p.z*.39];map.lineWidth=10;map.lineJoin='round';map.strokeStyle='#06131299';map.beginPath();track.forEach((p,i)=>{const [x,y]=pt(p);i?map.lineTo(x,y):map.moveTo(x,y);});map.closePath();map.stroke();map.lineWidth=3;map.strokeStyle='#eceddf';map.stroke();const gate=track[(race.nextCheckpoint*60)%track.length],[gx,gy]=pt(gate);map.fillStyle='#f2fa3d';map.fillRect(gx-3,gy-3,6,6);const [x,y]=pt(race.car);map.fillStyle='#effc43';map.beginPath();map.arc(x,y,5,0,Math.PI*2);map.fill();}
+const map=$('map').getContext('2d'),mapBounds={minX:Math.min(...track.map(p=>p.x)),maxX:Math.max(...track.map(p=>p.x)),minZ:Math.min(...track.map(p=>p.z)),maxZ:Math.max(...track.map(p=>p.z))},mapScale=228/Math.max(mapBounds.maxX-mapBounds.minX,mapBounds.maxZ-mapBounds.minZ);function drawMap(){map.clearRect(0,0,260,260);const pt=p=>[130+(p.x-(mapBounds.minX+mapBounds.maxX)/2)*mapScale,130+(p.z-(mapBounds.minZ+mapBounds.maxZ)/2)*mapScale];map.lineWidth=10;map.lineJoin='round';map.strokeStyle='#06131299';map.beginPath();track.forEach((p,i)=>{const [x,y]=pt(p);i?map.lineTo(x,y):map.moveTo(x,y);});map.closePath();map.stroke();map.lineWidth=3;map.strokeStyle='#eceddf';map.stroke();const gate=track[(race.nextCheckpoint*60)%track.length],[gx,gy]=pt(gate);map.fillStyle='#f2fa3d';map.fillRect(gx-3,gy-3,6,6);const [x,y]=pt(race.car);map.fillStyle='#effc43';map.beginPath();map.arc(x,y,5,0,Math.PI*2);map.fill();}
 let last=performance.now(),clock=0,accumulator=0,wheelAngle=0;const look=new THREE.Vector3(),desired=new THREE.Vector3(),forward=new THREE.Vector3(),right=new THREE.Vector3();
 function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;clock+=dt;if(!world)return;
  accumulator+=dt;while(accumulator>=1/120){race.step(1/120,input);accumulator-=1/120;}

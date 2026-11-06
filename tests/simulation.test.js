@@ -2,7 +2,7 @@ import {createAdvisory} from '../src/advisory.js';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {Race,track,nearest,heading,angleDiff,formatTime,trackLength} from '../src/simulation.js';
 function running(){const r=new Race();r.start();for(let i=0;i<61;i++)r.step(.05);return r;}
 function lap(r){for(let i=1;i<=track.length;i++){r.lapTime+=.04;r.recordProgress({index:i%track.length,distance:0});}}
-test('circuit is a finite closed track of plausible length',()=>{assert.equal(track.length,720);assert(trackLength>1500&&trackLength<2200);assert(track.every(p=>Number.isFinite(p.x+p.z)));assert.equal(nearest(track[0].x,track[0].z).index,0);});
+test('circuit is a finite closed track of plausible length',()=>{assert.equal(track.length,720);assert(trackLength>2950&&trackLength<3100);assert(track.every(p=>Number.isFinite(p.x+p.z)));assert.equal(nearest(track[0].x,track[0].z).index,0);});
 test('countdown precedes race and does not add elapsed time',()=>{const r=new Race();r.start();r.step(.05,{gas:true});assert.equal(r.state,'countdown');assert.equal(r.elapsed,0);assert.equal(r.car.speed,0);});
 test('throttle accelerates, S brakes to zero, then reverses',()=>{const r=running();for(let i=0;i<120;i++)r.step(1/120,{gas:true});assert(r.car.speed>10);let stopped=false;for(let i=0;i<240;i++){r.step(1/120,{brake:true});if(r.car.speed===0){stopped=true;break;}}assert(stopped);r.step(1/120,{brake:true});assert(r.car.speed<0);});
 test('pause freezes race and resume returns to same state',()=>{const r=running();r.pause();const t=r.elapsed;r.step(.05,{gas:true});assert.equal(r.elapsed,t);r.start();assert.equal(r.state,'racing');});

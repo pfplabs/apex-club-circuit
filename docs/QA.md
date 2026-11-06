@@ -2,12 +2,12 @@
 
 ## Current automated checks
 
-- 43 Node tests pass; production Vite build passes.
+- 45 Node tests pass; production Vite build passes.
 - Actual GLB geometry parses and remains finite after batching, including embedded-texture foliage. Image decoding is mocked in Node, not a GPU rendering pass.
 - Correct steering directions at four camera headings; stable front-wheel axes at 72 rotation samples and five steering angles; forward/reverse spin and S brake-to-reverse tested.
-- Revised 2.089 km circuit: normal-input reference driver completes three laps at 30/60/120 Hz without contacts or offroad frames. Flying laps: 63.033 / 62.950 / 62.883 seconds respectively. Maximum centerline distance 5.669 m on an 8.5 m half-width road.
-- Guidance offsets retain a 3.5 m road margin; speed propagation anticipates turns; 16 meaningful deceleration regions. Road and guardrail loop intersections checked.
-- Normal-input entry taper → pit lane → exit rejoin: 30.100 / 30.367 / 30.500 seconds, no contacts or offroad frames. Lane tracking error below 0.18 m. Physical separator blocks crossings from either side.
+- Revised 3.034 km circuit: normal-input reference driver completes three laps at 30/60/120 Hz without contacts or offroad frames. Flying laps: 58.967 / 59.000 / 58.975 seconds respectively. Maximum centerline distance 6.460 m on an 8.5 m half-width road.
+- Guidance offsets retain a 3.5 m road margin; speed propagation anticipates turns; 11 meaningful deceleration regions. Road and guardrail loop intersections checked.
+- Normal-input entry taper → pit lane → exit rejoin: 29.767 / 30.150 / 30.333 seconds, no contacts or offroad frames. Lane tracking error below 0.18 m. Physical separator blocks crossings from either side.
 - Garage parking through normal inputs passes at all three rates; stopping freezes the session. Crew, equipment and the new roller shutters stay clear of the parked bay. Forty unstaffed bays are closed; all four bays in the staffed garage remain open.
 - Pause, restart, recovery, countdown, missed gates and backwards lap rejection retained.
 
@@ -26,3 +26,7 @@ Required next checks:
 ## Gameplay trailer
 
 Do not record the final trailer until the user explicitly confirms satisfaction. Once approved, capture only genuine browser gameplay after visual QA. Preserve raw footage. Suggested edit: title camera, real countdown/launch, straight and braking/esses, cockpit, pit entry and garage finish. Label any WIP and time compression honestly. Blender renders are asset/scene previews, never gameplay.
+
+## Purposeful circuit revision
+
+The initial tighter course was replaced by two real straights and differentiated corner sequences. Equal-distance sampling varies under 0.05%; the estimated-time line optimizer includes exit acceleration, and the steering-speed quadratic is corrected. Engine acceleration is 22 m/s², drag coefficient .0028, road speed cap 82 m/s; braking, reverse and pit limiter remain unchanged. The car is still arcade-tuned. Terrain now remains below the entire road/runoff and pit through a course-distance margin; tests verify it.

@@ -34,7 +34,7 @@ The game is self-contained after installation/build: Three.js, all GLBs, texture
 
 Complete three validated laps, or take the pit lane on the left of the opening straight. Follow the tapered entrance, obey the 60 km/h limiter and either rejoin through the exit taper or steer into the yellow-highlighted garage marked **PARK HERE / END SESSION**. Stopping inside ends the session. The garage can be used without completing any laps. The game pauses on loss of focus; resume when you return.
 
-The custom 2.09 km circuit combines a long pit straight, northern hairpin, flowing esses, western back straight and southern technical corners. The optional racing line uses track geometry to suggest positioning and target speed: green to accelerate, amber to prepare, red to brake. Braking advice anticipates corners from actual speed. A normal-input reference driver takes approximately **63 seconds per flying lap** (start lap ~65 seconds), tested at 30, 60 and 120 Hz. Human times vary. Handling is speed-sensitive arcade driving, not simulation-grade tyre physics. Continuous formed-metal guardrails, sloped kerbs, distance boards, gravel runoff, tyre stacks, physical pit separator, pit speed limiting, off-road slowdown and garage bounds are implemented.
+The custom 3.03 km circuit uses COTA/Imola-inspired sequencing: a 670 m main straight into heavy braking, linked flowing bends with an exit onto a 550 m back straight, an open hairpin and a concise technical return. It is an original flat layout, not a traced circuit. The optional racing line uses track geometry to suggest positioning and target speed: green to accelerate, amber to prepare, red to brake. Braking advice anticipates corners from actual speed. A normal-input reference driver takes approximately **59 seconds per flying lap** (start lap ~61 seconds), tested at 30, 60 and 120 Hz. Human times vary. Handling is speed-sensitive arcade driving, not simulation-grade tyre physics. Continuous formed-metal guardrails, sloped kerbs, distance boards, gravel runoff, tyre stacks, physical pit separator, pit speed limiting, off-road slowdown and garage bounds are implemented.
 
 ## Actual 3D assets
 
@@ -44,7 +44,7 @@ The custom 2.09 km circuit combines a long pit straight, northern hairpin, flowi
 - `public/assets/oak-realistic.glb`: original branched oak geometry and alpha-cutout leaf textures.
 - `public/assets/grandstand.glb`: blue seats, cedar back wall and canopy.
 - `public/assets/pit-building.glb`: cedar facade, glazed upper level and garage bays.
-- `blender/pit-scene/`: current pit-focused Blender scene with repository-relative textures with reproducible snapshot exporter, crew and closed unstaffed shutters. A WIP visualization, not gameplay.
+- `blender/pit-scene/`: pit-focused Blender snapshot of the crew/shutter stage with repository-relative textures with reproducible snapshot exporter, crew and closed unstaffed shutters. A WIP visualization, not gameplay.
 - `blender/`: editable `.blend` sources, Blender 4.3.2 procedural reconstruction scripts, track centerline and asset verification.
 - `src/world.js`: true mesh circuit, raised kerbs, guardrails, pit lane, CC0 photographic asphalt/grass PBR maps, a photographic HDR daylight sky, 108 instanced branched trees with textured alpha-cutout foliage and displaced distant terrain. Static mesh batching keeps runtime draw count manageable.
 
@@ -57,7 +57,7 @@ npm test
 npm run build
 ```
 
-43 automated checks pass, including loading all real GLBs into a finite 137-mesh world (including instanced trees and safety barriers), four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+45 automated checks pass, including loading all real GLBs into a finite 137-mesh world (including instanced trees and safety barriers), four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
 
 **The real WebGL browser has rendered and driven the handling-fix build; the user confirmed the corrected steering feels better. The newer track, guidance, detailed environment and pit route still need browser visual/performance QA.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
 

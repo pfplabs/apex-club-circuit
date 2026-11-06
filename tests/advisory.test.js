@@ -5,8 +5,8 @@ import {createAdvisory,brakeCue} from '../src/advisory.js';
 const a=createAdvisory(track),n=track.length;
 test('course preserves opening and fits compact bounds',()=>{
  assert.equal(n,720);assert.deepEqual(track[0],{x:209,z:-165});assert(track[1].z>track[0].z);
- for(const axis of ['x','z'])assert(Math.max(...track.map(p=>p[axis]))-Math.min(...track.map(p=>p[axis]))<600);
- assert(trackLength>1900&&trackLength<2200);console.log(`Course: ${trackLength.toFixed(3)} m`);
+ for(const axis of ['x','z'])assert(Math.max(...track.map(p=>p[axis]))-Math.min(...track.map(p=>p[axis]))<850);
+ assert(trackLength>2950&&trackLength<3100);console.log(`Course: ${trackLength.toFixed(3)} m`);
 });
 test('ideal line retains paved safety margin at samples and between samples',()=>{
  assert(a.offsets.every(o=>Number.isFinite(o)&&Math.abs(o)<=TRACK_WIDTH/2-3.5));
@@ -41,3 +41,5 @@ for(const width of [8.5,15])test(`road/guardrail ±${width} m ribbon has no self
  }
  for(let i=0;i<n;i++)for(let j=0;j<n;j++)assert(!crosses(left[i],left[(i+1)%n],right[j],right[(j+1)%n]),`opposite intersection ${i}/${j}`);
 });
+
+test('equal-distance sampling and exit-aware line optimization',()=>{const spacing=track.map((p,i)=>Math.hypot(p.x-track[(i+1)%n].x,p.z-track[(i+1)%n].z));assert(Math.max(...spacing)/Math.min(...spacing)<1.002);assert(a.estimatedTime<a.initialEstimatedTime);assert(a.maxSpeed===80);});

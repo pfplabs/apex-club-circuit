@@ -7,16 +7,8 @@ import {PIT,inPitArea} from './pit-lane.js';
 const N = 720;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const angleDiff = (a,b) => Math.atan2(Math.sin(a-b),Math.cos(a-b));
-export function sampleTrack(t) {
-  const p=CONTROL_POINTS,n=p.length,s=((t%1+1)%1)*n,i=Math.floor(s),u=s-i;
-  const r=[];
-  for(let axis=0;axis<2;axis++){
-    const a=p[(i+n-1)%n][axis],b=p[i%n][axis],c=p[(i+1)%n][axis],d=p[(i+2)%n][axis];
-    r.push(.5*((2*b)+(-a+c)*u+(2*a-5*b+4*c-d)*u*u+(-a+3*b-3*c+d)*u*u*u));
-  }
-  return {x:r[0],z:r[1]};
-}
-export const track=Array.from({length:N},(_,i)=>sampleTrack(i/N));
+export {sampleTrack,track} from './course.js';
+import {track} from './course.js';
 export function heading(i){const a=track[(i+N)%N],b=track[(i+1+N)%N];return Math.atan2(b.x-a.x,b.z-a.z);}
 export function nearest(x,z){
   let best=Infinity,index=0;
@@ -59,19 +51,19 @@ export class Race {
    const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=n.distance>TRACK_WIDTH/2&&!this.inPit;this.contact=false;
    const steer=clamp((input.left?-1:0)+(input.right?1:0)+(input.steer??0),-1,1);
    c.steer+=(steer-c.steer)*Math.min(1,dt*9);
-   const drag=1.2+.005*c.speed*c.speed+(this.offroad?10:0);
+   const drag=1.2+.0028*c.speed*c.speed+(this.offroad?10:0);
    // S first brakes forward motion to zero; continuing to hold it selects reverse.
    // W similarly brakes reverse motion before accelerating forward. Crossing zero
    // takes its own physics tick, so a braking impulse cannot jump through neutral.
    if(c.speed>0){
-     const accel=input.brake?-32:input.gas?17:0;
+     const accel=input.brake?-32:input.gas?22:0;
      c.speed=Math.max(0,c.speed+(accel-drag)*dt);
    }else if(c.speed<0){
      const accel=input.gas?24:input.brake?-10:0;
      c.speed=Math.min(0,c.speed+(accel+drag)*dt);
    }else if(input.brake&&!input.gas)c.speed=-10*dt;
-   else if(input.gas&&!input.brake)c.speed=17*dt;
-   c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?(60/3.6):71);
+   else if(input.gas&&!input.brake)c.speed=22*dt;
+   c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?(60/3.6):82);
    // Positive input is driver-right. Reverse travel naturally reverses yaw rate.
    c.yaw-=c.steer*(1.3/(1+Math.abs(c.speed)*.018))*clamp(c.speed/6,-1,1)*dt;
    const previousX=c.x;

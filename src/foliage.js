@@ -1,11 +1,8 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
-// Match the broad terrain surface in world.js, with flat grass taking precedence.
-export function foliageGroundHeight(x,z){
- const ramp=Math.max(0,Math.min(1,(Math.hypot(x,z)-380)/150));
- return Math.max(0,ramp*(35+Math.sin(x*.012)*Math.cos(z*.009)*35+Math.abs(Math.sin(x*.006+z*.008))*85+Math.sin(x*.026+z*.03)*8)*.24-.1);
-}
+import {sampledGroundHeight} from './terrain.js';
+export const foliageGroundHeight=sampledGroundHeight;
 function distanceToTrack(x,z,track){
  let best=Infinity;
  for(let i=0;i<track.length;i++){
