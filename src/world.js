@@ -1,3 +1,4 @@
+import {addStartComplex} from './start-complex.js';
 import {addExpandedSponsors,addLongPitEntryPaint} from './expanded-sponsors.js';
 import {createSuspensionRig} from './suspension-visuals.js';
 import {apply2013Shape,shape2013SponsorPlacements} from './car-shape-2013.js';
@@ -57,9 +58,9 @@ export async function createWorld(scene,renderer,options={}){
  const safety=addTrackSafety(scene);
  // Finish line and grid on the opening straight.
  const start=track[0],h=heading(0);for(let x=-TRACK_WIDTH/2;x<TRACK_WIDTH/2;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
- for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),p.y+.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
  const metal=mat('#303e41',{metalness:.6,roughness:.5});for(const x of [start.x-12,start.x+12])mesh(new THREE.BoxGeometry(.5,7,.5),metal,scene,x,3.5,start.z+3);
  mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('APEX  /  CLUB CIRCUIT','#142021','#f0f64c',10,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
+ addStartComplex(scene,start,white,metal);
  addPitLaneDetails(scene,roadMaterial,sign);
  addPitStructures(scene);
  addLongPitEntryPaint(scene,white);

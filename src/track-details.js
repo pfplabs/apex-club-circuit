@@ -1,3 +1,4 @@
+import {addBrakingBoards} from './braking-boards.js';
 import {TRACK_WIDTH,surfaceTrack,surfaceVertex,ROAD_SUBDIVISIONS} from './course.js';
 import {kerbScale,kerbOffset} from './kerb-layout.js';
 import {KERB_PROFILE} from './surface-profile.js';
@@ -33,11 +34,11 @@ function gravelTexture(){const c=document.createElement('canvas');c.width=c.heig
 export function addBrakingDetails(scene,advice,makeSign){
  const candidates=advice.curvature.map((k,i)=>({i,k:Math.abs(k)})).sort((a,b)=>b.k-a.k),apexes=[];
  for(const {i,k}of candidates){if(k<.017||apexes.length>=6)break;if(apexes.every(j=>Math.hypot(track[i].x-track[j].x,track[i].z-track[j].z)>72))apexes.push(i);}
- const rubber=new THREE.MeshStandardMaterial({color:'#242624',roughness:.96}),steel=new THREE.MeshStandardMaterial({color:'#a4a9a7',metalness:.72,roughness:.5});
+ const rubber=new THREE.MeshStandardMaterial({color:'#242624',roughness:.96});
  const tyreGeometry=new THREE.TorusGeometry(.31,.125,8,16);tyreGeometry.rotateX(Math.PI/2);const transforms=[];
  const gravel=new THREE.MeshStandardMaterial({map:gravelTexture(),roughness:1,side:THREE.DoubleSide});
- for(const apex of apexes){const signSide=-Math.sign(advice.curvature[apex])||1;let i=apex,d=0,markers=new Set();
-  while(d<155){const next=(i+719)%720;d+=advice.segments[next];i=next;for(const mark of [150,100,50])if(!markers.has(mark)&&d>=mark){markers.add(mark);const p=track[i],h=heading(i),board=makeSign(String(mark),'#f0eee7','#202826',1.7,1.5);board.position.set(p.x+Math.cos(h)*signSide*12.3,p.y+1.45,p.z-Math.sin(h)*signSide*12.3);board.rotation.y=h+Math.PI;scene.add(board);const post=new THREE.Mesh(new THREE.BoxGeometry(.09,1.5,.09),steel);post.position.set(board.position.x,p.y+.75,board.position.z);scene.add(post);}}
+ const boards=addBrakingBoards(scene);
+ for(const apex of apexes){const signSide=-Math.sign(advice.curvature[apex])||1;
   const gp=[],guv=[];
   for(let offset=-10;offset<12;offset++){const a=track[(apex+offset+720)%720],b=track[(apex+offset+721)%720],h=Math.atan2(b.x-a.x,b.z-a.z);const q=[point(a,h,signSide*(TRACK_WIDTH/2+1.3),.047),point(b,h,signSide*(TRACK_WIDTH/2+1.3),.047),point(a,h,signSide*14.8,.047),point(b,h,signSide*14.8,.047)];gp.push(...q[0],...q[1],...q[2],...q[2],...q[1],...q[3]);guv.push(0,offset,0,offset+1,4,offset,4,offset,0,offset+1,4,offset+1);
    const length=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.round(length/.86));for(let step=0;step<steps;step++){const t=step/steps;for(let stack=0;stack<3;stack++){const matrix=new THREE.Matrix4().makeTranslation(a.x+(b.x-a.x)*t+Math.cos(h)*signSide*15.1,a.y+(b.y-a.y)*t+.16+stack*.27,a.z+(b.z-a.z)*t-Math.sin(h)*signSide*15.1);transforms.push(matrix);}}
@@ -46,7 +47,7 @@ export function addBrakingDetails(scene,advice,makeSign){
  }
  const tyreLOD=addTyreBarrierLOD(scene,transforms,tyreGeometry,rubber);
  tyreGeometry.dispose();rubber.dispose();
- return {apexes,tyres:transforms.length,tyreLOD,updateTyreBarriers:tyreLOD.updateTyreBarriers};
+ return {apexes,boards,tyres:transforms.length,tyreLOD,updateTyreBarriers:tyreLOD.updateTyreBarriers};
 }
 
 export function addPitLaneDetails(scene,roadMaterial,makeSign){
@@ -59,7 +60,7 @@ export function addPitLaneDetails(scene,roadMaterial,makeSign){
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const apron=new THREE.Mesh(geo,roadMaterial);apron.receiveShadow=true;scene.add(apron);
  const wall=new THREE.Mesh(new THREE.BoxGeometry(.38,.9,PIT.wallEndZ-PIT.wallStartZ),concrete);wall.position.set(PIT.wallX,.45,(PIT.wallStartZ+PIT.wallEndZ)/2);wall.castShadow=true;wall.receiveShadow=true;scene.add(wall);
  for(const z of [PIT.wallStartZ,PIT.wallEndZ]){const end=new THREE.Mesh(new THREE.BoxGeometry(.68,.92,2),new THREE.MeshStandardMaterial({color:'#e7c834',roughness:.8}));end.position.set(PIT.wallX,.46,z);scene.add(end);}
- for(const [label,x,z,rot]of [['PIT ENTRY  /  60',225,-190,Math.PI],['PIT EXIT  →',232,42,Math.PI]]){const board=makeSign(label,'#f0eee3','#222e2b',6,1);board.position.set(x,2.7,z);board.rotation.y=rot;scene.add(board);const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,.12),white);post.position.set(x,1.25,z);scene.add(post);}
+ for(const [label,x,z,rot]of [['PIT ENTRY  /  60',225,PIT.minZ+25,Math.PI],['PIT EXIT  →',232,42,Math.PI]]){const board=makeSign(label,'#f0eee3','#222e2b',6,1);board.position.set(x,2.7,z);board.rotation.y=rot;scene.add(board);const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,.12),white);post.position.set(x,1.25,z);scene.add(post);}
  // Exit arrows are painted on the actual merging lane, with the centerline kept clear.
  for(const z of [48,63,78]){const x=pitCenterX(z),g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([x-.7,.075,z-2,x+.7,.075,z-2,x-.5,.075,z+2],3));g.computeVertexNormals();scene.add(new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:'#e9e5d7',side:THREE.DoubleSide,roughness:.9})));}
 }

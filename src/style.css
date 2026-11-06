@@ -27,3 +27,9 @@ body.pit-presentation #results{top:12%;left:3%;width:280px;transform:none}
 #map-wrap .sector-scope{margin-top:5px;font-size:7px;color:#c7b3de}
 /* Keep sector colors readable over pale asphalt and concrete. */
 #map-wrap{padding:10px 12px;background:#132026df;border:1px solid #ffffff25;border-radius:3px;opacity:1}#map-wrap small{text-shadow:0 1px 3px #000}
+
+/* Guidance and settings share a row; expanded settings cannot cover guidance. */
+#race-tools{position:absolute;top:184px;left:38px;right:38px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;z-index:8;pointer-events:none}
+#race-tools #status{position:static;min-width:0;max-width:520px;flex:1;line-height:1.5;text-align:left;overflow-wrap:anywhere}
+#race-tools #render-settings{position:static;flex:0 0 auto;max-width:min(270px,50%);pointer-events:auto}
+@media(max-width:700px){#race-tools{top:153px;left:18px;right:18px;gap:12px}#race-tools #render-settings{max-width:55%}#race-tools #status{font-size:9px;letter-spacing:1px}}
