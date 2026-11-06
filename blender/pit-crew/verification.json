@@ -1,0 +1,43 @@
+{
+  "triangles": 24912,
+  "draw_calls": 9,
+  "bounds_blender": {
+    "min": [
+      -4.872117519378662,
+      -4.09987735748291,
+      0.16899999976158142
+    ],
+    "max": [
+      4.84379768371582,
+      -1.9669349193572998,
+      1.9840391874313354
+    ]
+  },
+  "clear_corridor_vertices": 0,
+  "placement": {
+    "world_position": [
+      241,
+      0,
+      -75
+    ],
+    "rotation_y": -1.5707963267948966
+  },
+  "blender_person_roots": [
+    [
+      -4.5,
+      -2.55,
+      0.15
+    ],
+    [
+      -1.6,
+      -2.65,
+      0.15
+    ],
+    [
+      4.48,
+      -2.55,
+      0.15
+    ]
+  ],
+  "clear_corridor": "Entire local X=0..3 (world Z=-75..-72), no crew or equipment"
+}

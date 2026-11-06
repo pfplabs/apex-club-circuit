@@ -1,0 +1,30 @@
+[
+  {
+    "id": "torqen",
+    "name": "TORQEN",
+    "category": "PERFORMANCE FUELS + LUBRICANTS",
+    "accent": "#FF8C28",
+    "bg": "#111D2B"
+  },
+  {
+    "id": "relayon",
+    "name": "RELAYON",
+    "category": "GLOBAL MEDIA NETWORK",
+    "accent": "#36D6BE",
+    "bg": "#102B31"
+  },
+  {
+    "id": "hexlume",
+    "name": "HEXLUME",
+    "category": "COMPUTE WITHOUT LIMITS",
+    "accent": "#9FADFF",
+    "bg": "#1B2140"
+  },
+  {
+    "id": "stratum",
+    "name": "STRATUM",
+    "category": "RACEWORKS",
+    "accent": "#FFCF51",
+    "bg": "#172126"
+  }
+]

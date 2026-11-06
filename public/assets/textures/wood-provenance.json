@@ -1,0 +1,46 @@
+{
+  "asset": "hinoki_planks",
+  "official_page": "https://polyhaven.com/a/hinoki_planks",
+  "author": "Charlotte Baglioni",
+  "license": "CC0 1.0",
+  "license_url": "https://polyhaven.com/license",
+  "physical_tile_width_m": 1.9,
+  "board_direction_in_image": "horizontal",
+  "source_page_notes": "Warm honey tone, finished satin surface, clean indoor/outdoor wall cladding.",
+  "verification": "Direct official download URLs; original pixels. SHA256 computed locally, not compared to API. No API requests made.",
+  "files": [
+    {
+      "file": "wood-albedo.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hinoki_planks/hinoki_planks_diff_1k.jpg",
+      "bytes": 527974,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "a0166cad69a255971bf25f336c9947d2853b4dae5707c84a86f25f79aec347a5",
+      "source_filename": "hinoki_planks_diff_1k.jpg"
+    },
+    {
+      "file": "wood-normal.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hinoki_planks/hinoki_planks_nor_gl_1k.jpg",
+      "bytes": 456865,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "90c97139c4a6e086c67b9e2c23c138c92df59070de0414763bcd3e7fc3c878a1",
+      "source_filename": "hinoki_planks_nor_gl_1k.jpg"
+    },
+    {
+      "file": "wood-roughness.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hinoki_planks/hinoki_planks_rough_1k.jpg",
+      "bytes": 155781,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "20d2dc9fdbd2b76b267d68617836efb4af74397716f7ad9b5dff3752bdb097f5",
+      "source_filename": "hinoki_planks_rough_1k.jpg"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "building": {
+    "triangles": 9680,
+    "draw_calls": 11,
+    "blender_bounds": {
+      "min": [
+        -6.25,
+        -7.600000381469727,
+        0.0
+      ],
+      "max": [
+        6.25,
+        6.275000095367432,
+        6.966000080108643
+      ]
+    }
+  },
+  "props": {
+    "triangles": 32684,
+    "draw_calls": 9,
+    "blender_bounds": {
+      "min": [
+        -5.855000019073486,
+        -5.75,
+        0.12000001221895218
+      ],
+      "max": [
+        5.854999542236328,
+        5.75,
+        3.4700000286102295
+      ]
+    }
+  },
+  "world_root": [
+    244.5,
+    0,
+    -76.5
+  ],
+  "rotation_y": -1.5707963267948966,
+  "front_plane_world_x": 238.5,
+  "nominal_bay_width_m": 6,
+  "nominal_depth_m": 12,
+  "nominal_clear_height_m": 3.2,
+  "ceiling_clear_above_floor_m": 3.341,
+  "lowest_car_corridor_fixture_clearance_m": 3.196,
+  "bay_centres_world_z": [
+    -79.5,
+    -73.5
+  ],
+  "parking_car_world_center": [
+    244,
+    0,
+    -73.5
+  ],
+  "requested_clear_corridor": {
+    "world_x": [
+      238.45,
+      247
+    ],
+    "world_z": [
+      -74.6,
+      -72.4
+    ],
+    "furnishing_aabb_overlaps": [],
+    "architecture_ground_level_overlaps": []
+  },
+  "note": "Design dimensions based on existing car and working clearances, not claimed FIA minima. Front pier widths reduce nominal six metre bay openings to about 5.76m.",
+  "floor_finish_top_m": 0.159
+}

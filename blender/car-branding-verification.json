@@ -1,0 +1,573 @@
+{
+  "source": "/workspace/shared/f1-3d-rebuild/blender/car.blend",
+  "source_sha256": "a658a9f685f850dac768ecd193563e07e4bc2db30af7e639617147ed933fbe31",
+  "removed": [
+    {
+      "name": "Team side lettering",
+      "type": "MESH",
+      "vertices": 364
+    },
+    {
+      "name": "Team side lettering.001",
+      "type": "MESH",
+      "vertices": 364
+    },
+    {
+      "name": "Wing branding",
+      "type": "MESH",
+      "vertices": 364
+    },
+    {
+      "name": "Wing branding.001",
+      "type": "MESH",
+      "vertices": 364
+    },
+    {
+      "name": "Rear wing team",
+      "type": "MESH",
+      "vertices": 1640
+    }
+  ],
+  "before": {
+    "bounds": {
+      "min": [
+        -1.0160000324249268,
+        -2.5149998664855957,
+        -6.3381513371041365e-09
+      ],
+      "max": [
+        1.0160000324249268,
+        2.5899999141693115,
+        1.1399999856948853
+      ]
+    },
+    "wheels": {
+      "Wheel_FL": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.8100000023841858
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            1.3799999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke",
+          "Alloy spoke.001",
+          "Alloy spoke.002",
+          "Alloy spoke.003",
+          "Alloy spoke.004",
+          "Alloy spoke.005",
+          "Alloy spoke.006",
+          "Alloy spoke.007",
+          "Alloy spoke.008",
+          "Alloy spoke.009",
+          "Alloy spoke.010",
+          "Alloy spoke.011",
+          "Alloy spoke.012",
+          "Alloy spoke.013",
+          "Alloy spoke.014",
+          "Alloy spoke.015",
+          "Alloy spoke.016",
+          "Alloy spoke.017",
+          "Alloy spoke.018",
+          "Alloy spoke.019",
+          "Rim inset",
+          "Rim inset.001",
+          "Rim lip_FL",
+          "Rim lip_FL.001",
+          "Tyre_FL",
+          "Wheel hub",
+          "Wheel hub.001",
+          "Yellow sidewall_FL",
+          "Yellow sidewall_FL.001"
+        ]
+      },
+      "Wheel_FR": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.8100000023841858
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            1.3799999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke.020",
+          "Alloy spoke.021",
+          "Alloy spoke.022",
+          "Alloy spoke.023",
+          "Alloy spoke.024",
+          "Alloy spoke.025",
+          "Alloy spoke.026",
+          "Alloy spoke.027",
+          "Alloy spoke.028",
+          "Alloy spoke.029",
+          "Alloy spoke.030",
+          "Alloy spoke.031",
+          "Alloy spoke.032",
+          "Alloy spoke.033",
+          "Alloy spoke.034",
+          "Alloy spoke.035",
+          "Alloy spoke.036",
+          "Alloy spoke.037",
+          "Alloy spoke.038",
+          "Alloy spoke.039",
+          "Rim inset.002",
+          "Rim inset.003",
+          "Rim lip_FR",
+          "Rim lip_FR.001",
+          "Tyre_FR",
+          "Wheel hub.002",
+          "Wheel hub.003",
+          "Yellow sidewall_FR",
+          "Yellow sidewall_FR.001"
+        ]
+      },
+      "Wheel_RL": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.800000011920929
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -1.4500000476837158
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke.040",
+          "Alloy spoke.041",
+          "Alloy spoke.042",
+          "Alloy spoke.043",
+          "Alloy spoke.044",
+          "Alloy spoke.045",
+          "Alloy spoke.046",
+          "Alloy spoke.047",
+          "Alloy spoke.048",
+          "Alloy spoke.049",
+          "Alloy spoke.050",
+          "Alloy spoke.051",
+          "Alloy spoke.052",
+          "Alloy spoke.053",
+          "Alloy spoke.054",
+          "Alloy spoke.055",
+          "Alloy spoke.056",
+          "Alloy spoke.057",
+          "Alloy spoke.058",
+          "Alloy spoke.059",
+          "Rim inset.004",
+          "Rim inset.005",
+          "Rim lip_RL",
+          "Rim lip_RL.001",
+          "Tyre_RL",
+          "Wheel hub.004",
+          "Wheel hub.005",
+          "Yellow sidewall_RL",
+          "Yellow sidewall_RL.001"
+        ]
+      },
+      "Wheel_RR": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -1.4500000476837158
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke.060",
+          "Alloy spoke.061",
+          "Alloy spoke.062",
+          "Alloy spoke.063",
+          "Alloy spoke.064",
+          "Alloy spoke.065",
+          "Alloy spoke.066",
+          "Alloy spoke.067",
+          "Alloy spoke.068",
+          "Alloy spoke.069",
+          "Alloy spoke.070",
+          "Alloy spoke.071",
+          "Alloy spoke.072",
+          "Alloy spoke.073",
+          "Alloy spoke.074",
+          "Alloy spoke.075",
+          "Alloy spoke.076",
+          "Alloy spoke.077",
+          "Alloy spoke.078",
+          "Alloy spoke.079",
+          "Rim inset.006",
+          "Rim inset.007",
+          "Rim lip_RR",
+          "Rim lip_RR.001",
+          "Tyre_RR",
+          "Wheel hub.006",
+          "Wheel hub.007",
+          "Yellow sidewall_RR",
+          "Yellow sidewall_RR.001"
+        ]
+      }
+    },
+    "objects": 203
+  },
+  "after": {
+    "bounds": {
+      "min": [
+        -1.0160000324249268,
+        -2.5149998664855957,
+        -6.3381513371041365e-09
+      ],
+      "max": [
+        1.0160000324249268,
+        2.5899999141693115,
+        1.1399999856948853
+      ]
+    },
+    "wheels": {
+      "Wheel_FL": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.8100000023841858
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            1.3799999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke",
+          "Alloy spoke.001",
+          "Alloy spoke.002",
+          "Alloy spoke.003",
+          "Alloy spoke.004",
+          "Alloy spoke.005",
+          "Alloy spoke.006",
+          "Alloy spoke.007",
+          "Alloy spoke.008",
+          "Alloy spoke.009",
+          "Alloy spoke.010",
+          "Alloy spoke.011",
+          "Alloy spoke.012",
+          "Alloy spoke.013",
+          "Alloy spoke.014",
+          "Alloy spoke.015",
+          "Alloy spoke.016",
+          "Alloy spoke.017",
+          "Alloy spoke.018",
+          "Alloy spoke.019",
+          "Rim inset",
+          "Rim inset.001",
+          "Rim lip_FL",
+          "Rim lip_FL.001",
+          "Tyre_FL",
+          "Wheel hub",
+          "Wheel hub.001",
+          "Yellow sidewall_FL",
+          "Yellow sidewall_FL.001"
+        ]
+      },
+      "Wheel_FR": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.8100000023841858
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            1.3799999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke.020",
+          "Alloy spoke.021",
+          "Alloy spoke.022",
+          "Alloy spoke.023",
+          "Alloy spoke.024",
+          "Alloy spoke.025",
+          "Alloy spoke.026",
+          "Alloy spoke.027",
+          "Alloy spoke.028",
+          "Alloy spoke.029",
+          "Alloy spoke.030",
+          "Alloy spoke.031",
+          "Alloy spoke.032",
+          "Alloy spoke.033",
+          "Alloy spoke.034",
+          "Alloy spoke.035",
+          "Alloy spoke.036",
+          "Alloy spoke.037",
+          "Alloy spoke.038",
+          "Alloy spoke.039",
+          "Rim inset.002",
+          "Rim inset.003",
+          "Rim lip_FR",
+          "Rim lip_FR.001",
+          "Tyre_FR",
+          "Wheel hub.002",
+          "Wheel hub.003",
+          "Yellow sidewall_FR",
+          "Yellow sidewall_FR.001"
+        ]
+      },
+      "Wheel_RL": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.800000011920929
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -1.4500000476837158
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke.040",
+          "Alloy spoke.041",
+          "Alloy spoke.042",
+          "Alloy spoke.043",
+          "Alloy spoke.044",
+          "Alloy spoke.045",
+          "Alloy spoke.046",
+          "Alloy spoke.047",
+          "Alloy spoke.048",
+          "Alloy spoke.049",
+          "Alloy spoke.050",
+          "Alloy spoke.051",
+          "Alloy spoke.052",
+          "Alloy spoke.053",
+          "Alloy spoke.054",
+          "Alloy spoke.055",
+          "Alloy spoke.056",
+          "Alloy spoke.057",
+          "Alloy spoke.058",
+          "Alloy spoke.059",
+          "Rim inset.004",
+          "Rim inset.005",
+          "Rim lip_RL",
+          "Rim lip_RL.001",
+          "Tyre_RL",
+          "Wheel hub.004",
+          "Wheel hub.005",
+          "Yellow sidewall_RL",
+          "Yellow sidewall_RL.001"
+        ]
+      },
+      "Wheel_RR": {
+        "matrix_world": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.800000011920929
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -1.4500000476837158
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.36000001430511475
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "children": [
+          "Alloy spoke.060",
+          "Alloy spoke.061",
+          "Alloy spoke.062",
+          "Alloy spoke.063",
+          "Alloy spoke.064",
+          "Alloy spoke.065",
+          "Alloy spoke.066",
+          "Alloy spoke.067",
+          "Alloy spoke.068",
+          "Alloy spoke.069",
+          "Alloy spoke.070",
+          "Alloy spoke.071",
+          "Alloy spoke.072",
+          "Alloy spoke.073",
+          "Alloy spoke.074",
+          "Alloy spoke.075",
+          "Alloy spoke.076",
+          "Alloy spoke.077",
+          "Alloy spoke.078",
+          "Alloy spoke.079",
+          "Rim inset.006",
+          "Rim inset.007",
+          "Rim lip_RR",
+          "Rim lip_RR.001",
+          "Tyre_RR",
+          "Wheel hub.006",
+          "Wheel hub.007",
+          "Yellow sidewall_RR",
+          "Yellow sidewall_RR.001"
+        ]
+      }
+    },
+    "objects": 198
+  },
+  "max_bounds_delta_m": 0.0,
+  "unchanged_retained_objects": 198,
+  "blue_sidepod_plates": [
+    "Blue sidepod graphic",
+    "Blue sidepod graphic.001"
+  ],
+  "source_unchanged": true,
+  "glTF_forward": "-Z",
+  "glTF_up": "+Y",
+  "export_verification": {
+    "nodes": 9,
+    "meshes": 5,
+    "material_primitives": 23,
+    "wheel_pivots_glTF": {
+      "Wheel_FL": [
+        -0.8100000023841858,
+        0.36000001430511475,
+        -1.3799999952316284
+      ],
+      "Wheel_FR": [
+        0.8100000023841858,
+        0.36000001430511475,
+        -1.3799999952316284
+      ],
+      "Wheel_RL": [
+        -0.800000011920929,
+        0.36000001430511475,
+        1.4500000476837158
+      ],
+      "Wheel_RR": [
+        0.800000011920929,
+        0.36000001430511475,
+        1.4500000476837158
+      ]
+    }
+  }
+}

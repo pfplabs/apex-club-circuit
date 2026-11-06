@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.blend1
+__pycache__/
+.DS_Store
+
+*.log
+blender/pit-scene/*snapshot.json
+blender/pit-scene/*.png

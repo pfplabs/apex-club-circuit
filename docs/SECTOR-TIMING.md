@@ -1,0 +1,15 @@
+# Three-sector timing
+
+Replaces the visible moving gate posts and twelve-gate HUD with three distance-based sectors, split at samples 240 and 480 of the 720-sample circuit, ending at the start/finish line. The minimap colors each complete third and marks S1/S2/S3; times beneath it use the same colors. Invisible route checkpoints remain solely for shortcut/reverse validation. No course geometry or pit-layout changes are included.
+
+Chris clarified “F1 convention”: purple means faster than the session overall best; otherwise green means faster than the driver's personal best; otherwise yellow. Equal times are yellow. Comparisons use displayed millisecond precision. No baseline is neutral. Previous-lap improvement alone never earns purple.
+
+The current game is solo and has no competitor feed or global leaderboard. Session overall and personal best are therefore established from the same valid laps; a new PB is also session overall best and displays purple. Green is implemented for a personal improvement below an independently established overall benchmark, but cannot naturally occur in this solo session. No competitors or benchmark times are invented. The minimap explicitly labels “PURPLE = SESSION BEST · SOLO”; tooltips identify each result. Baselines are session-local, not claimed as global or historical records.
+
+The first valid lap establishes session-local baselines. Invalid laps do not update previous or best times. Sector feedback is shown provisionally during a lap and cleared if that lap is invalid at the finish. Completed sectors remain visible across the lap boundary until replaced. Restart clears baselines. Timing is sampled at the existing physics tick, without sub-tick boundary interpolation. There is one current course; the split calculation adapts to its distance-sampled points rather than hard-coded world positions.
+
+Validation: npm run check passes (127 tests and production build), including full-lap driving at 30/60/120 Hz, three-sector sums and lap wrap, color precedence, recovery rejection, restart and minimap path coverage including finish-line closure. No browser visual QA was performed for this isolated pass. Existing Vite large-chunk warning remains.
+
+Integration: cherry-pick the feature commit from the local apex-sectors repository onto the F1 integration branch. Files touching shared integration areas are src/main.js, src/world.js, src/simulation.js, index.html and src/style.css. New module src/sectors.js and tests/sectors.test.js contain the isolated logic and verification. Main was not modified.
+
+Combined integration: retained sponsor paint, pit clearance and trackside details. All 129 tests and production build pass; browser confirms sector labels, neutral starting map, solo-session scope and no errors. Added a dark map/timing backing for contrast over bright pavement. Removing the two visible checkpoint posts brings the combined scene back to 158 meshes. Automated tests verify completed-sector colors; browser check does not claim a manually driven full timing session.

@@ -1,0 +1,25 @@
+{
+  "method": "Individual editable furnishing object AABB intersections at every height; only floor/markings/drain/ceiling utility meshes excluded",
+  "furnishing_objects_checked": 296,
+  "overlaps": [],
+  "local_blender_xy_corridor": [
+    [
+      1.9,
+      4.1
+    ],
+    [
+      -6.05,
+      2.5
+    ]
+  ],
+  "world_xz_corridor": [
+    [
+      238.45,
+      247
+    ],
+    [
+      -74.6,
+      -72.4
+    ]
+  ]
+}

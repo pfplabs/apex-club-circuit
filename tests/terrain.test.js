@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {track,heading,PIT} from '../src/simulation.js';import {sampledGroundHeight} from '../src/terrain.js';
+test('expanded road and runoff never intersect the terrain surface',()=>{for(let i=0;i<track.length;i++){const p=track[i],h=heading(i);for(const offset of [-17,0,17])assert(sampledGroundHeight(p.x+Math.cos(h)*offset,p.z-Math.sin(h)*offset)<=p.y+.001);}for(let z=-145;z<12;z+=5)for(const x of [220,230,241,245])assert.equal(sampledGroundHeight(x,z),0);});
