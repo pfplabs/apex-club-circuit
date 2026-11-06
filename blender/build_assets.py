@@ -50,7 +50,6 @@ for side in [-1,1]:
  box('Sidepod intake',(side*.50,.095,.48),(.40,.025,.14),carbon,.035)
  # blue graphic on sidepod exterior, own branding
  box('Blue sidepod graphic',(side*.875,-.69,.40),(.006,.72,.15),blue,.003)
- text('Team side lettering','APEX',(side*.883,-.66,.38),.13,white,(math.pi/2,0,side*math.pi/2))
  rod('Mirror stalk',(side*.31,.05,.62),(side*.46,.02,.82),.016,silver)
  box('White mirror',(side*.48,.02,.83),(.19,.09,.10),white,.025)
  box('Mirror yellow stripe',(side*.48,.068,.83),(.13,.006,.035),yellow,.005)
@@ -71,7 +70,6 @@ for s in [-1,1]:
  box('Front wing endplate',(s*.978,2.30,.25),(.035,.55,.25),white,.02)
  box('Endplate yellow accent',(s*.999,2.40,.18),(.008,.34,.05),yellow)
  rod('Nose wing pylon',(s*.14,2.10,.36),(s*.14,2.17,.17),.035,white)
- text('Wing branding','APEX',(s*.65,2.30,.181),.095,blue)
 # rear wing with vertical plates and red line
 box('Rear wing',(0,-2.27,.99),(1.66,.43,.065),white,.03)
 box('Rear wing yellow lip',(0,-2.48,1.0),(1.67,.045,.07),yellow,.012)
@@ -80,7 +78,6 @@ for s in [-1,1]:
  box('Rear wing endplate',(s*.83,-2.25,.82),(.038,.53,.47),white,.018)
  box('Rear wing red detail',(s*.852,-2.25,.88),(.008,.44,.038),red)
  rod('Rear wing pylon',(s*.22,-1.96,.30),(s*.22,-2.19,.95),.035,carbon)
-text('Rear wing team','APEX RACING',(0,-2.25,1.028),.13,blue)
 # wheel empties preserve pivot for game steering/spin. suspension remains chassis-owned.
 for suffix,x,y,width in [('FL',-.81,1.38,.31),('FR',.81,1.38,.31),('RL',-.80,-1.45,.38),('RR',.80,-1.45,.38)]:
  z=.36; side=1 if x>0 else -1

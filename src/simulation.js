@@ -1,3 +1,4 @@
+import {createPitService,selectPitService,stepPitService,advanceTyreWear,tyreGrip} from './pit-service.js';
 // Units are meters and seconds. Rendering has no role in simulation or lap validation.
 export const TRACK_WIDTH = 17;
 export {CONTROL_POINTS} from './course.js';
@@ -22,11 +23,12 @@ export class Race {
  constructor(){this.reset();}
  reset(){
    this.car={x:track[0].x,z:track[0].z,yaw:heading(0),speed:0,steer:0};
-   this.state='ready';this.elapsed=0;this.lapTime=0;this.laps=[];this.nextCheckpoint=1;this.lastIndex=0;this.offroad=false;this.contact=false;this.countdown=3;this.message='';this.invalid=false;this.inPit=false;this.parkedTime=0;
+   this.pitService=createPitService();this.servicePedalLatch=false;this.state='ready';this.elapsed=0;this.lapTime=0;this.laps=[];this.nextCheckpoint=1;this.lastIndex=0;this.offroad=false;this.contact=false;this.countdown=3;this.message='';this.invalid=false;this.inPit=false;this.parkedTime=0;
  }
  start(){if(this.state==='paused'){this.state=this.resumeState;return;}if(this.state==='ready'){this.state='countdown';this.countdown=3;}}
  pause(){if(this.state==='racing'||this.state==='countdown'){this.resumeState=this.state;this.state='paused';}}
- resetCar(){const i=nearest(this.car.x,this.car.z).index;const p=track[i];Object.assign(this.car,{x:p.x,z:p.z,yaw:heading(i),speed:0,steer:0});this.lastIndex=i;}
+ resetCar(){const i=nearest(this.car.x,this.car.z).index;const p=track[i];Object.assign(this.car,{x:p.x,z:p.z,yaw:heading(i),speed:0,steer:0});this.lastIndex=i;const {compound,wear}=this.pitService;this.pitService={...createPitService(),compound,wear};this.servicePedalLatch=false;this.invalid=true;}
+ choosePitService(choice){return selectPitService(this.pitService,choice,this.car,{raceState:this.state});}
  recordProgress(near){
    const i=near.index,delta=(i-this.lastIndex+N+N/2)%N-N/2;
    if(delta>0&&delta<25){
@@ -49,6 +51,13 @@ export class Race {
    if(this.state!=='racing')return;
    this.elapsed+=dt;this.lapTime+=dt;
    const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=n.distance>TRACK_WIDTH/2&&!this.inPit;this.contact=false;
+   if(stepPitService(this.pitService,c,dt,{inPit:this.inPit,raceState:this.state})){
+     this.offroad=false;this.contact=false;
+     if(this.pitService.phase==='released')this.servicePedalLatch=true;
+     if(this.pitService.phase==='parked'){this.state='parked';this.message='PARKED IN THE GARAGE';}
+     return;
+   }
+   if(this.servicePedalLatch){if(!input.gas&&!input.brake)this.servicePedalLatch=false;else input={...input,gas:false,brake:false};}
    const steer=clamp((input.left?-1:0)+(input.right?1:0)+(input.steer??0),-1,1);
    c.steer+=(steer-c.steer)*Math.min(1,dt*9);
    const drag=1.2+.0028*c.speed*c.speed+(this.offroad?10:0);
@@ -65,8 +74,8 @@ export class Race {
    else if(input.gas&&!input.brake)c.speed=22*dt;
    c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?(60/3.6):82);
    // Positive input is driver-right. Reverse travel naturally reverses yaw rate.
-   c.yaw-=c.steer*(1.3/(1+Math.abs(c.speed)*.018))*clamp(c.speed/6,-1,1)*dt;
-   const previousX=c.x;
+   c.yaw-=c.steer*(1.3/(1+Math.abs(c.speed)*.018))*clamp(c.speed/6,-1,1)*tyreGrip(this.pitService)*dt;
+   const previousX=c.x,previousZ=c.z;
    c.x+=Math.sin(c.yaw)*c.speed*dt;c.z+=Math.cos(c.yaw)*c.speed*dt;
    if(c.z>PIT.wallStartZ&&c.z<PIT.wallEndZ&&Math.abs(c.x-PIT.wallX)<1.1){c.x=PIT.wallX+(previousX<PIT.wallX?-1.1:1.1);c.speed*=.35;this.contact=true;}
    const after=nearest(c.x,c.z);
@@ -82,6 +91,7 @@ export class Race {
      if(c.x>241){c.x=241;c.speed=0;}
      if(bay&&c.x>239.2&&Math.abs(c.speed)<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
    }
+   advanceTyreWear(this.pitService,Math.hypot(c.x-previousX,c.z-previousZ));
    this.recordProgress(nearest(c.x,c.z));
  }
 }

@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import {vehicleGroundPose} from './vehicle-ground.js';
+import {pitServiceView} from './pit-service.js';
+import {createTyreServiceRig,updateTyreServiceRig} from './tyre-visuals.js';
+import {updateServiceTools} from './service-tools.js';
 import {updateWheelRig,wheelSpinDelta} from './vehicle-visuals.js';
 import {Race,nearest,track,heading,formatTime,angleDiff} from './simulation.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
@@ -7,7 +11,7 @@ import {createWorld} from './world.js';
 import './style.css';
 const $=id=>document.getElementById(id),race=new Race(),input={left:false,right:false,gas:false,brake:false};
 const ui={hud:$('hud'),menu:$('menu'),pause:$('pause-menu'),results:$('results'),speed:$('speedometer'),count:$('countdown'),touch:$('touch-controls')};
-const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,1800);let renderer,world,cameraMode=0,best=Infinity,previousState='',loaded=false,engine,audioOn=false,guideEnabled=true;
+const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,1800);let renderer,world,cameraMode=0,best=Infinity,previousState='',loaded=false,engine,audioOn=false,guideEnabled=true,tyreRig,previousPitPhase='idle';
 try{best=Number(localStorage.getItem('f1-3d-best-course-v3'))||Infinity;}catch{}
 $('best').textContent=formatTime(best);$('start').disabled=true;
 try{
@@ -30,6 +34,7 @@ function pause(){race.pause();clearInput();setStateUI();}
 $('start').onclick=start;$('resume').onclick=start;$('restart').onclick=restart;$('restart-pause').onclick=restart;$('pause').onclick=pause;
 function toggleCamera(){cameraMode=(cameraMode+1)%3;$('camera').querySelector('b').textContent=['CHASE','COCKPIT','ORBIT'][cameraMode];}
 $('camera').onclick=toggleCamera;
+for(const button of document.querySelectorAll('[data-pit-choice]'))button.onclick=()=>{if(race.choosePitService(button.dataset.pitChoice))clearInput();};
 function toggleGuide(){guideEnabled=!guideEnabled;$('guide').querySelector('b').textContent=guideEnabled?'ON':'OFF';$('guide').setAttribute('aria-pressed',String(guideEnabled));}
 $('guide').onclick=toggleGuide;
 function toggleAudio(){
@@ -42,8 +47,8 @@ window.addEventListener('keydown',e=>{
  if(keys[e.code]){e.preventDefault();input[keys[e.code]]=true;}
  if(e.repeat)return;
  if(e.code==='Enter'&&(race.state==='ready'||race.state==='paused'))start();
- if(e.code==='Escape'||e.code==='Space'){e.preventDefault();if(race.state==='paused')start();else pause();}
- if(e.code==='KeyL')toggleGuide();if(e.code==='KeyC')toggleCamera();if(e.code==='KeyR'&&race.state==='racing')race.resetCar();if(e.code==='KeyM')toggleAudio();
+ if(e.code==='Escape'||e.code==='Space'&&!e.target.closest('button,input,select')){e.preventDefault();if(race.state==='paused')start();else pause();}
+ if(e.code==='KeyL')toggleGuide();if(e.code==='KeyC')toggleCamera();if(e.code==='KeyR'&&race.state==='racing'){race.resetCar();clearInput();}if(e.code==='KeyM')toggleAudio();
 });window.addEventListener('keyup',e=>{if(keys[e.code]){e.preventDefault();input[keys[e.code]]=false;}});
 window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 for(const b of document.querySelectorAll('[data-control]')){
@@ -57,6 +62,12 @@ function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last
  accumulator+=dt;while(accumulator>=1/120){race.step(1/120,input);accumulator-=1/120;}
  if(previousState!==race.state)setStateUI();const c=race.car;world.car.position.set(c.x,.035,c.z);world.car.rotation.y=c.yaw+Math.PI;world.sun.position.set(c.x+150,260,c.z+190);world.sun.target.position.set(c.x,0,c.z);world.sun.target.updateMatrixWorld();
  if(race.state==='racing')wheelAngle+=wheelSpinDelta(c.speed,dt);updateWheelRig(world.wheelRig,wheelAngle,c.steer);
+ const serviceVisual=updateTyreServiceRig(tyreRig,race.pitService);const groundPose=vehicleGroundPose(c);world.car.position.y=groundPose.height+serviceVisual.jackHeight;world.car.rotation.set(groundPose.pitch,c.yaw+Math.PI,groundPose.roll,'YXZ');updateServiceTools(world.serviceTools,c,serviceVisual);
+ if(previousPitPhase==='changing'&&race.pitService.phase==='released')clearInput();previousPitPhase=race.pitService.phase;
+ const pitView=pitServiceView(race.pitService,c,{raceState:race.state});$('pit-service').classList.toggle('hidden',!pitView.visible);$('pit-choices').classList.toggle('hidden',!pitView.showChoices);for(const button of document.querySelectorAll('[data-pit-choice]'))button.disabled=!pitView.canChoose;
+ $('pit-instruction').textContent=pitView.active?pitView.phaseLabel:pitView.canChoose?'Ready. Choose fresh tyres or end the session.':pitView.message;
+ $('pit-progress').classList.toggle('hidden',!pitView.active);$('pit-progress').firstElementChild.style.width=`${pitView.progress*100}%`;
+ $('tyre-compound').textContent=pitView.compound;$('tyre-compound').style.color=pitView.color;$('tyre-wear').textContent=`WEAR ${Math.round(pitView.wear*100)}%`;
  forward.set(Math.sin(c.yaw),0,Math.cos(c.yaw));right.set(Math.cos(c.yaw),0,-Math.sin(c.yaw));
  if(race.state==='ready'){
    const a=c.yaw+Math.PI*.28+Math.sin(clock*.12)*.2;desired.set(c.x+Math.sin(a)*8.4,3.1,c.z+Math.cos(a)*8.4);look.set(c.x+right.x*2.1,1,c.z+right.z*2.1);
@@ -77,6 +88,6 @@ function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last
  drawMap();renderer.render(scene,camera);
 }
 requestAnimationFrame(animate);
-createWorld(scene,renderer).then(w=>{world=w;loaded=true;camera.position.set(race.car.x-5,3,race.car.z-7);$('load-status').textContent='READY · ALL ASSETS LOCAL';$('length').textContent=(w.trackLength/1000).toFixed(2);$('start').disabled=false;setStateUI();}).catch(e=>{console.error(e);showError('The 3D assets could not load. Serve this project with npm run dev or npm run preview; do not open index.html directly. '+e.message);});
+createWorld(scene,renderer).then(w=>{world=w;tyreRig=createTyreServiceRig(w.wheelRig);loaded=true;camera.position.set(race.car.x-5,3,race.car.z-7);$('load-status').textContent='READY · ALL ASSETS LOCAL';$('length').textContent=(w.trackLength/1000).toFixed(2);$('start').disabled=false;setStateUI();}).catch(e=>{console.error(e);showError('The 3D assets could not load. Serve this project with npm run dev or npm run preview; do not open index.html directly. '+e.message);});
 // Read-only diagnostics for QA. Gameplay inputs still go through normal controls.
-window.__F1_TEST__={snapshot:()=>({loaded,state:race.state,car:{...race.car},laps:[...race.laps],elapsed:race.elapsed,nextCheckpoint:race.nextCheckpoint,offroad:race.offroad,inPit:race.inPit,meshCount:world?.meshCount,triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,cameraMode,guideEnabled}),nearest,track,heading,angleDiff};
+window.__F1_TEST__={snapshot:()=>({loaded,state:race.state,car:{...race.car},laps:[...race.laps],elapsed:race.elapsed,nextCheckpoint:race.nextCheckpoint,offroad:race.offroad,inPit:race.inPit,meshCount:world?.meshCount,triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,cameraMode,guideEnabled,pitService:{...race.pitService}}),nearest,track,heading,angleDiff};

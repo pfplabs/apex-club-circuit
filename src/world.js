@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {loadSponsorMaterial,addCarSponsors,createSponsorPanels,SPONSORS} from './sponsors.js';
+import {createServiceTools,addServiceBox} from './service-tools.js';
 import {terrainHeight} from './terrain.js';
 import {addGarageDoors} from './garage-doors.js';
 import {addFoliage} from './foliage.js';
@@ -38,14 +40,15 @@ export async function createWorld(scene,renderer,options={}){
  const start=track[0],h=heading(0);for(let x=-8;x<8;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
  for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
  const metal=mat('#303e41',{metalness:.6,roughness:.5});for(const x of [start.x-12,start.x+12])mesh(new THREE.BoxGeometry(.5,7,.5),metal,scene,x,3.5,start.z+3);
- mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('F1 2013  /  CLUB CIRCUIT','#142021','#f0f64c',22,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
+ mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('APEX  /  CLUB CIRCUIT','#142021','#f0f64c',10,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
  addPitLaneDetails(scene,roadMaterial,sign);
  const terrain=new THREE.PlaneGeometry(2000,2000,100,100);terrain.rotateX(-Math.PI/2);const terrainPos=terrain.attributes.position;for(let i=0;i<terrainPos.count;i++){const x=terrainPos.getX(i),z=terrainPos.getZ(i),d=Math.hypot(x,z);terrainPos.setY(i,terrainHeight(x,z));}terrain.computeVertexNormals();const mountains=mesh(terrain,groundMaterial,scene);mountains.castShadow=false;
  // Next gate: subtle illuminated side posts rather than a wall across the road.
  const gate=new THREE.Group();const glow=new THREE.MeshBasicMaterial({color:'#eafa51'});for(const side of [-1,1]){const p=mesh(new THREE.CylinderGeometry(.13,.13,2,6),glow,gate,side*7.2,1,0);p.castShadow=false;}scene.add(gate);
  const loader=new GLTFLoader();
  const [carAsset,pitAsset,standAsset,treeAsset,propsAsset,crewAsset]=await Promise.all(['car.glb','pit-building.glb','grandstand.glb','oak-realistic.glb','pit-props.glb','pit-crew.glb'].map(p=>loader.loadAsync(`${base}${p}`)));
- const car=carAsset.scene;car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
+ const sponsorMaterial=renderer?await loadSponsorMaterial(`${base}sponsors/sponsor-atlas.png`,Math.min(8,renderer.capabilities.getMaxAnisotropy())):new THREE.MeshStandardMaterial({name:'Fictional sponsor atlas'});
+ const car=carAsset.scene;addCarSponsors(car,sponsorMaterial);car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
  addFoliage(scene,treeAsset,track);
  // Darken and break up the previously featureless concrete apron and walls.
  const concreteMap=texture('road');concreteMap.repeat.set(8,8);
@@ -55,9 +58,16 @@ export async function createWorld(scene,renderer,options={}){
  const crew=crewAsset.scene;crew.position.set(241,0,-75);crew.rotation.y=-Math.PI/2;buildings.add(crew);
  const garageLight=new THREE.PointLight('#fff1d1',22,16,2);garageLight.position.set(240,2.7,PIT.garageZ);scene.add(garageLight);
  buildings.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
- for(let j=0;j<10;j++){const board=sign(j%2?'OPEN WHEEL  /  2013':'APEX MOTORSPORT','#f0ed38','#202e28',11,1.8);board.position.set(194,1.4,-139+j*15);board.rotation.y=Math.PI/2;scene.add(board);}
+ // Sponsor boards have physical mounts: pit-straight barrier, garage plaques,
+ // and the existing gantry. The shared atlas adds only one static material batch.
+ const sponsorPanels=[];
+ for(let j=0;j<10;j++){const z=-139+j*14;sponsorPanels.push({brand:SPONSORS[j%4].id,position:[193.64,1.23,z],rotation:[0,Math.PI/2,0],width:7.2,height:1.8});mesh(new THREE.BoxGeometry(.12,1.82,7.22),metal,scene,193.56,1.23,z);for(const side of [-1,1])mesh(new THREE.BoxGeometry(.12,2.15,.12),metal,scene,193.5,1.075,z+side*3.2);}
+ for(let j=0;j<11;j++){const z=-135+j*12-4.5;sponsorPanels.push({brand:SPONSORS[j%4].id,position:[238.404,3.35,z],rotation:[0,-Math.PI/2,0],width:2.2,height:.55});mesh(new THREE.BoxGeometry(.08,.57,2.22),metal,scene,238.445,3.35,z);}
+ for(const [brand,offset]of [['torqen',-8.3],['hexlume',8.3]])sponsorPanels.push({brand,position:[start.x+offset,6.7,start.z+2.699],rotation:[0,Math.PI,0],width:5.6,height:1.4});
+ scene.add(createSponsorPanels(sponsorPanels,sponsorMaterial));
  const parking=mesh(new THREE.PlaneGeometry(9,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,237,.125,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',8,1);garageLabel.position.set(237.9,3.4,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);
  const guide=createRacingGuide(scene);addBrakingDetails(scene,guide.advice,sign);
+ addServiceBox(scene);const serviceTools=createServiceTools(scene);
  const wheelRig=createWheelRig(car);const wheels=wheelRig.map(item=>item.wheel);
  // Photographic CC0 HDR lighting and physically based photographic surface maps.
  // The no-GPU geometry test supplies no renderer and therefore skips image decoding.
@@ -71,6 +81,6 @@ export async function createWorld(scene,renderer,options={}){
    }
  }
  // Batch static meshes by material; preserve the animated car, guide and sky.
- const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate||a===guide.group)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv','color'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
- return {car,gate,wheels,wheelRig,guide,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
+ const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate||a===guide.group||a===serviceTools.group)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv','color'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
+ return {car,gate,wheels,wheelRig,guide,serviceTools,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
 }

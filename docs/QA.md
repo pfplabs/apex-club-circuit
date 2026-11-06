@@ -2,10 +2,10 @@
 
 ## Current automated checks
 
-- 45 Node tests pass; production Vite build passes.
+- 63 Node tests pass; production Vite build passes.
 - Actual GLB geometry parses and remains finite after batching, including embedded-texture foliage. Image decoding is mocked in Node, not a GPU rendering pass.
 - Correct steering directions at four camera headings; stable front-wheel axes at 72 rotation samples and five steering angles; forward/reverse spin and S brake-to-reverse tested.
-- Revised 3.034 km circuit: normal-input reference driver completes three laps at 30/60/120 Hz without contacts or offroad frames. Flying laps: 58.967 / 59.000 / 58.975 seconds respectively. Maximum centerline distance 6.460 m on an 8.5 m half-width road.
+- Revised 3.034 km circuit: normal-input reference driver completes three laps at 30/60/120 Hz without contacts or offroad frames. Flying laps: 58.967 / 59.000 / 58.975 seconds respectively. Maximum centerline distance 6.563 m on an 8.5 m half-width road.
 - Guidance offsets retain a 3.5 m road margin; speed propagation anticipates turns; 11 meaningful deceleration regions. Road and guardrail loop intersections checked.
 - Normal-input entry taper → pit lane → exit rejoin: 29.767 / 30.150 / 30.333 seconds, no contacts or offroad frames. Lane tracking error below 0.18 m. Physical separator blocks crossings from either side.
 - Garage parking through normal inputs passes at all three rates; stopping freezes the session. Crew, equipment and the new roller shutters stay clear of the parked bay. Forty unstaffed bays are closed; all four bays in the staffed garage remain open.
@@ -30,3 +30,9 @@ Do not record the final trailer until the user explicitly confirms satisfaction.
 ## Purposeful circuit revision
 
 The initial tighter course was replaced by two real straights and differentiated corner sequences. Equal-distance sampling varies under 0.05%; the estimated-time line optimizer includes exit acceleration, and the steering-speed quadratic is corrected. Engine acceleration is 22 m/s², drag coefficient .0028, road speed cap 82 m/s; braking, reverse and pit limiter remain unchanged. The car is still arcade-tuned. Terrain now remains below the entire road/runoff and pit through a course-distance margin; tests verify it.
+
+## Tyre service and sponsor integration
+
+Pure and integrated tests cover stopped/aligned choice gating, five-second tyre changes, pause/resume, pedal-release latch, preserved wear on recovery, compound band isolation, and continuous swept-footprint garage rolling. The real car bounds and bay opening informed the route; current crew/props bounds remain outside it. User must still verify box usability, buttons/focus, animation, clearance and colour readability in the browser. The crew models are static; visible mechanical jacks, wheels and nut tools animate. The garage apron now contributes wheel-contact height rather than allowing the car to sink through it.
+
+Actual cleaned car sponsor projections preserve all wheel subtrees and are invariant under gameplay placement. 69 decal triangles share one car draw call; mounted world panels share one material. Check texture clarity and orientation in real chase/cockpit/orbit rendering.
