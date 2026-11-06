@@ -4,6 +4,10 @@
 
 This default branch preserves the original **2D prototype** described below. Current 3D gameplay, setup instructions and verification notes are on [`feat/blender-3d-reconstruction`](https://github.com/pfplabs/apex-club-circuit/tree/feat/blender-3d-reconstruction) and its [README](https://github.com/pfplabs/apex-club-circuit/blob/feat/blender-3d-reconstruction/README.md). The 3D work has not been merged into `main`.
 
+![Current 3D development: cockpit view and racing telemetry](https://github.com/pfplabs/apex-club-circuit/blob/2ff8a83f2b0eb29904a30be5ac14981399af062e/docs/images/f1-24.jpg?raw=true)
+
+*November 6, 2026 browser gameplay from the 3D feature branch, not the 2D prototype below. [View the full gallery](https://github.com/pfplabs/apex-club-circuit/blob/feat/blender-3d-reconstruction/README.md#gameplay-gallery).*
+
 ## Original 2D prototype
 
 A self-contained, original open-wheel time-attack minigame inspired by classic top-down racing. Race three clockwise laps around Emerald Park. No libraries, network requests, external assets, build step, or accounts.
