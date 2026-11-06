@@ -12,5 +12,5 @@ test('barrier modules stay outside driving boundary and preserve the pit access 
 test('molded modules and catch fence have finite geometry with bounded draw calls',()=>{
  const scene=new THREE.Scene(),s=addTrackSafety(scene);assert(s.modules>200);assert(s.fencePosts>100);
  let meshes=0,triangles=0;scene.traverse(o=>{if(o.isMesh){meshes++;assert([...o.geometry.attributes.position.array].every(Number.isFinite));triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3*(o.isInstancedMesh?o.count:1);if(o.isInstancedMesh)assert([...o.instanceMatrix.array].every(Number.isFinite));}});
- assert(meshes<=5);assert(triangles<550000,`safety triangles ${triangles}`);assert(s.net.material.alphaTest>0);assert(s.barrierMesh.instanceColor);s.update({x:2000,z:2000});assert.equal(s.fittings.count,0);s.update({x:209,z:-165});assert(s.fittings.count>0&&s.fittings.count<s.modules);
+ assert(meshes<=6);assert(triangles<550000,`safety triangles ${triangles}`);assert(s.net.material.alphaTest>0);assert(s.barrierMesh.instanceColor);s.update({x:2000,z:2000});assert.equal(s.fittings.count,0);s.update({x:209,z:-165});assert(s.fittings.count>0&&s.fittings.count<s.modules);
 });

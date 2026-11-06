@@ -7,10 +7,11 @@ export const PIT_LAYOUT=Object.freeze({startZ:-141,endZ:3,outerX:PIT.laneX-PIT.l
 export const pitPositions=()=>Array.from({length:11},(_,i)=>({x:serviceBox().x,z:serviceBox().z+(i-5)*12,active:i===5,team:['RELAYON','TORQEN','STRATUM','HEXLUME'][i%4]}));
 export function addPitLayout(scene,roadMaterial,makeSign){
  const positions=pitPositions(),labels=positions.map((b,i)=>`${String(i+1).padStart(2,'0')}  ${b.active?'APEX / YOUR BOX':b.team}`).concat(['RELAYON','TORQEN','STRATUM','HEXLUME','ONE WAY']);
- const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=1024;const ctx=canvas.getContext('2d');
+ const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=2048;const ctx=canvas.getContext('2d');
  labels.forEach((s,i)=>{ctx.fillStyle=i<11?'#373e3f':'#24565c';ctx.fillRect(0,i*64,1024,64);ctx.fillStyle='#e1e4db';ctx.font='bold 48px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s,512,i*64+32);});
- const atlas=new THREE.CanvasTexture(canvas);atlas.colorSpace=THREE.SRGBColorSpace;atlas.anisotropy=8;const lettering=new THREE.MeshStandardMaterial({map:atlas,roughness:.96,userData:{keepColorMap:true}});
- function paintedLabel(row,w,h){const g=new THREE.PlaneGeometry(w,h),uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setY(i,1-(row+1-uv.getY(i))/16);return new THREE.Mesh(g,lettering);}
+ ['RELAYON','TORQEN','STRATUM','HEXLUME'].forEach((brand,i)=>{ctx.fillStyle='#edece1';ctx.font='italic bold 48px Arial';ctx.fillText(brand,512,(16+i)*64+32);});
+ const atlas=new THREE.CanvasTexture(canvas);atlas.colorSpace=THREE.SRGBColorSpace;atlas.anisotropy=8;const lettering=new THREE.MeshStandardMaterial({map:atlas,roughness:.96,alphaTest:.1,userData:{keepColorMap:true}});
+ function paintedLabel(row,w,h){const g=new THREE.PlaneGeometry(w,h),uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setY(i,1-(row+1-uv.getY(i))/32);return new THREE.Mesh(g,lettering);}
  const group=new THREE.Group();group.name='Painted pit team positions and separated transit lane';
  const white=new THREE.MeshStandardMaterial({color:'#deddd3',roughness:.94}),paint=white;
  const asphalt=roadMaterial.clone();asphalt.color.multiplyScalar(.72);asphalt.userData.pitAsphalt=true;
@@ -29,6 +30,14 @@ export function addPitLayout(scene,roadMaterial,makeSign){
  // Reference: a flat colored apron boundary, not a divider down the fast lane.
  rect('Teal apron boundary strip',p.dividerX+p.boundaryWidth/2,mid,p.boundaryWidth,len,boundary,.046);
  for(const x of [p.dividerX,p.dividerX+p.boundaryWidth])rect('White apron boundary edge',x,mid,.09,len,white,.047);
+ // Sparse white sponsor paint sits wholly inside the turquoise apron strip.
+ // One shared transparent atlas keeps the strip color and avoids sign-like panels.
+ for(let i=0,z=p.startZ+9;z<p.endZ-5;z+=18,i++){
+  const geometry=new THREE.PlaneGeometry(3.6,.43),uv=geometry.attributes.uv,row=16+i%4;
+  for(let j=0;j<uv.count;j++)uv.setXY(j,.25+uv.getX(j)*.5,1-(row+1-uv.getY(j))/32);
+  const mark=new THREE.Mesh(geometry,lettering);mark.name='Turquoise strip fictional sponsor';mark.rotation.x=-Math.PI/2;mark.rotation.z=Math.PI/2;mark.position.set(p.dividerX+p.boundaryWidth/2,.048,z);mark.receiveShadow=true;group.add(mark);
+ }
+
  // Concrete construction joints stop at the boundary and never divide the through lane.
  for(let z=p.startZ+5;z<p.endZ;z+=6)rect('Concrete apron joint',(p.dividerX+p.boundaryWidth+p.facadeX)/2,z,p.facadeX-p.dividerX-p.boundaryWidth,.025,joint,.043);
  rect('Garage threshold drain',p.facadeX-.16,mid,.14,len,joint,.044);

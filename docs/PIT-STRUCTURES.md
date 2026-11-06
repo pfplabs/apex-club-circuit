@@ -23,3 +23,7 @@ Pit classification also excludes the full racing pavement, so the entry overlap 
 Inspected supplied image `libfile_ff80b204b5088191862d1c57e6640144`. Applied its clear separation of dark fast lane, colored flat apron boundary, and light concrete garage working area. The apron now uses independent concrete grain instead of asphalt maps, a 0.65 m teal strip with white edges, slab joints, and a garage-side threshold drain. These are flat visual surfaces; the four-meter one-way lane, service box, guide walls, and corrected gallery clearance are unchanged. The gallery remains the previously requested original design, rather than a copy of the photo's pit-wall consoles.
 
 Validation: all 122 tests and Vite build pass; background browser inspection confirms the lane/apron separation and completed soft-tyre service, with no browser errors. This visual pass does not add a new driving-physics or frame-rate benchmark.
+
+## Turquoise-strip branding
+
+Eight flat, white fictional sponsor marks (RELAYON, TORQEN, STRATUM, HEXLUME), spaced 18 m apart, sit within the 0.65 m turquoise strip. Each paint plane is 0.43 m across the strip, leaving clearance to both white edges; it cannot overlap the garage-side service boxes. Shared alpha-cutout lettering atlas preserves turquoise beneath the letters without adding a material batch. No collision or service geometry changed.
