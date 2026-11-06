@@ -8,7 +8,9 @@ import {prepareWoodMaterial,refineCarMaterials} from './material-refinement.js';
 import {terrainHeight} from './terrain.js';
 import {addGarageDoors} from './garage-doors.js';
 import {addFoliage} from './foliage.js';
-import {createSculptedKerbs,addBrakingDetails,addPitLaneDetails,addArmco} from './track-details.js';
+import {createSculptedKerbs,addBrakingDetails,addPitLaneDetails} from './track-details.js';
+import {addSpectators} from './spectators.js';
+import {addTrackSafety} from './track-safety.js';
 import {createPitApproach} from './pit-guidance.js';
 import {createRacingGuide} from './racing-guide.js';
 import {createWheelRig} from './vehicle-visuals.js';
@@ -38,7 +40,7 @@ export async function createWorld(scene,renderer,options={}){
  const asphalt=texture('road');const roadMaterial=mat('#b4b9b2',{map:asphalt,roughness:.96});ribbon(-TRACK_WIDTH/2,TRACK_WIDTH/2,.035,roadMaterial,scene);
  const white=mat('#f4f0d8',{roughness:.8}),red=mat('#c83d30',{roughness:.9});ribbon(-8.1,-7.94,.045,white,scene);ribbon(7.94,8.1,.045,white,scene);
  createSculptedKerbs(scene);
- addArmco(scene);
+ const safety=addTrackSafety(scene);
  // Finish line and grid on the opening straight.
  const start=track[0],h=heading(0);for(let x=-8;x<8;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
  for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
@@ -59,6 +61,7 @@ export async function createWorld(scene,renderer,options={}){
  pitAsset.scene.traverse(o=>{if(o.isMesh&&o.material.name==='Concrete'){o.material=o.material.clone();o.material.color.set('#777d79');o.material.map=concreteMap;o.material.roughness=.95;}});
  const woodMaterial=prepareWoodMaterial(pitAsset.scene);
  const buildings=new THREE.Group();scene.add(buildings);for(let i=0;i<11;i++){const pit=pitAsset.scene.clone();pit.position.set(PIT.buildingX,0,-136.5+i*12);pit.rotation.y=-Math.PI/2;buildings.add(pit);}for(let i=0;i<10;i++){const stands=standAsset.scene.clone();stands.position.set(184,0,-135+i*12);stands.rotation.y=Math.PI/2;buildings.add(stands);}for(const z of [-124.5,-100.5,-76.5,-52.5,-28.5]){const props=propsAsset.scene.clone();props.position.set(PIT.buildingX,0,z);props.rotation.y=-Math.PI/2;buildings.add(props);}
+ const spectators=addSpectators(scene);
  addGarageDoors(scene);
  const crew=crewAsset.scene;crew.position.set(PIT.buildingX,0,-76.5);crew.rotation.y=-Math.PI/2;buildings.add(crew);
  const garageLight=new THREE.PointLight('#fff1d1',22,16,2);garageLight.position.set(244,3.1,PIT.garageZ);scene.add(garageLight);
@@ -87,5 +90,5 @@ export async function createWorld(scene,renderer,options={}){
  }
  // Batch static meshes by material; preserve the animated car, guide and sky.
  const groups=new Map(),remove=[];scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o===sky||o===parking)return;let a=o;while(a){if(a===car||a===gate||a===guide.group||a===serviceTools.group||a===pitApproach.group)return;a=a.parent;}const mats=Array.isArray(o.material)?o.material:[o.material];const original=o.geometry.index?o.geometry.toNonIndexed():o.geometry;const spans=original.groups.length?original.groups:[{start:0,count:original.attributes.position.count,materialIndex:0}];for(const span of spans){const g=new THREE.BufferGeometry();for(const [name,attr]of Object.entries(original.attributes)){if(!['position','normal','uv','color'].includes(name))continue;g.setAttribute(name,new THREE.BufferAttribute(attr.array.slice(span.start*attr.itemSize,(span.start+span.count)*attr.itemSize),attr.itemSize));}if(!g.attributes.uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.applyMatrix4(o.matrixWorld);const m=mats[span.materialIndex||0];if(!groups.has(m))groups.set(m,[]);groups.get(m).push(g);}remove.push(o);});for(const o of remove)o.removeFromParent();for(const [m,gs]of groups){const merged=mergeGeometries(gs,false);if(merged)mesh(merged,m,scene);}
- return {pitApproach,brakingDetails,woodland,car,gate,wheels,wheelRig,guide,serviceTools,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
+ return {spectators,safety,pitApproach,brakingDetails,woodland,car,gate,wheels,wheelRig,guide,serviceTools,sky,sun,trackLength,meshCount:(()=>{let n=0;scene.traverse(o=>{if(o.isMesh)n++;});return n;})()};
 }

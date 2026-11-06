@@ -44,3 +44,12 @@ Actual cleaned car sponsor projections preserve all wheel subtrees and are invar
 - Shader/texture preparation holds Start until completion, warms hidden service and LOD variants, and reports timings. `__F1_TEST__.snapshot()` includes startup, frameStats and current LOD geometry counts. Cold-start vs warm-start and sustained racing frame times still need a real GPU measurement.
 - Tree LOD transitions 150–220m, fade/cull 650–850m. Tyre barriers transition 75–130m, fade/cull 550–750m. Complementary opaque screen-door dithering avoids alpha sorting, but motion shimmer must be assessed in browser. Near shadow materials use matching coverage, far shadows are disabled.
 - Verify new 20 closed garage shutters, both active bays open, timber scale, sponsor sign readability, car clearcoat, service jack/wheel animation, full garage roll and chase/cockpit views.
+
+
+## Guided pits and spectator safety pass
+
+- Pit assistance is advisory only: blue chevrons, a centre stop marker, distance/braking/alignment instructions, overshoot recovery and four visible steps. Existing settled-stop checks, five-second tyre service, garage routing and pedal-release latch are retained.
+- The former thin perimeter rail has been replaced with alternating molded plastic barrier modules, broad feet, recessed side pockets, fill/drain caps and connecting pins. Catch fencing stands behind the barriers, with woven mesh and an inward upper return. Pit entry/exit openings remain clear. These are visual assets, not a claim of motorsport safety certification.
+- Existing grandstands now contain deterministic seated spectators with varied clothing and skin tones. Seat aisles remain empty. Crowds use three instanced batches and cull by stand beyond 220 m; small barrier fittings/pockets cull beyond 110 m.
+- Automated checks cover guidance without physics mutation, service behavior, finite geometry, pit openings, spectator seats/aisles and distance culling.
+- Native Chrome visual verification was attempted but timed out during this pass. No new screenshot, FPS measurement or photorealistic parity is claimed. Check close-up barrier recess visibility, fence aliasing, crowd seating, pit panel placement at mobile sizes and normal-input stopping in the service box on the live preview.
