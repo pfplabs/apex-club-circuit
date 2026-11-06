@@ -44,6 +44,7 @@ The custom 2.09 km circuit combines a long pit straight, northern hairpin, flowi
 - `public/assets/oak-realistic.glb`: original branched oak geometry and alpha-cutout leaf textures.
 - `public/assets/grandstand.glb`: blue seats, cedar back wall and canopy.
 - `public/assets/pit-building.glb`: cedar facade, glazed upper level and garage bays.
+- `blender/pit-scene/`: current pit-focused Blender scene with repository-relative textures with reproducible snapshot exporter, crew and closed unstaffed shutters. A WIP visualization, not gameplay.
 - `blender/`: editable `.blend` sources, Blender 4.3.2 procedural reconstruction scripts, track centerline and asset verification.
 - `src/world.js`: true mesh circuit, raised kerbs, guardrails, pit lane, CC0 photographic asphalt/grass PBR maps, a photographic HDR daylight sky, 108 instanced branched trees with textured alpha-cutout foliage and displaced distant terrain. Static mesh batching keeps runtime draw count manageable.
 
