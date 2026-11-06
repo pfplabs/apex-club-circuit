@@ -1,3 +1,4 @@
+import {createBroadcastHUD} from './broadcast-hud.js';
 import {SECTOR_COLORS,sectorIndex,drawSectorMap} from './sectors.js';
 import {interpolateCar} from './render-motion.js';
 import {createRenderQuality,createFrameMetrics,settingsOwnKeyboard} from './render-quality.js';
@@ -24,6 +25,7 @@ const roadQA=import.meta.env.DEV&&new URLSearchParams(location.search).get('qa')
 const lapQA=roadQA&&new URLSearchParams(location.search).has('lap');let lapEvidence=null;const lapSamples=[];let lapContacts=0,lapOffroad=0;
 if(roadQA){const i=Math.max(0,Math.min(track.length-1,lapQA?0:(Number(new URLSearchParams(location.search).get('at'))||100)));Object.assign(race.car,track[i],{yaw:heading(i)});race.state='racing';}
 let qaReadout;if(roadQA){qaReadout=document.createElement('output');qaReadout.id='road-qa';qaReadout.style.cssText='position:fixed;bottom:30px;left:20px;z-index:100;color:white;background:#142021;padding:8px;font:12px monospace';document.body.append(qaReadout);}
+const broadcastHUD=createBroadcastHUD($('game'));
 const ui={hud:$('hud'),menu:$('menu'),pause:$('pause-menu'),results:$('results'),speed:$('speedometer'),count:$('countdown'),touch:$('touch-controls')};
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,1800);let renderer,renderQuality,frameMetrics,world,cameraMode=0,best=Infinity,previousState='',loaded=false,engine,audioOn=false,guideEnabled=true,tyreRig,previousPitPhase='idle';
 try{best=Number(localStorage.getItem('f1-3d-best-course-v5'))||Infinity;}catch{}
@@ -122,7 +124,7 @@ function animate(now){requestAnimationFrame(animate);const frameMs=now-last,dt=M
  if(engine){engine.osc.frequency.setTargetAtTime(55+Math.abs(c.speed)*5,engine.ctx.currentTime,.08);engine.gain.gain.setTargetAtTime(audioOn&&race.state==='racing'?.026:0,engine.ctx.currentTime,.1);}
  const cue=updateRacingGuide(world.guide,race,clock,guideEnabled),braking=$('brake-cue');braking.classList.toggle('hidden',!cue.active);braking.style.setProperty('--urgency',String(cue.intensity));
  if(cue.active){$('brake-target').textContent=`SLOW TO ${Math.round((cue.corner?.targetSpeed??cue.recommendedSpeed)*3.6)} KM/H`;$('brake-distance').textContent=cue.corner&&cue.corner.distance>8?`${Math.round(cue.corner.distance)} M TO CORNER`:'EASE OFF / BRAKE';}
- world.safety.update(camera.position);world.spectators.update(camera.position);world.woodland.updateFoliage(camera.position);world.brakingDetails.updateTyreBarriers(camera.position);drawMap();renderer.render(scene,camera);const measured=frameMetrics.end(metricDelta);
+ world.safety.update(camera.position);world.spectators.update(camera.position);world.woodland.updateFoliage(camera.position);world.brakingDetails.updateTyreBarriers(camera.position);drawMap();broadcastHUD.update(race,now);renderer.render(scene,camera);const measured=frameMetrics.end(metricDelta);
  if(lapQA&&!lapEvidence&&Number.isFinite(metricDelta)){lapSamples.push(measured);if(race.laps.length){const sorted=lapSamples.map(s=>s.frameMs).sort((a,b)=>a-b),mean=k=>lapSamples.reduce((a,s)=>a+s[k],0)/lapSamples.length;lapEvidence={lapSeconds:race.laps[0],samples:lapSamples.length,fps:1000/mean('frameMs'),p95Ms:sorted[Math.ceil(sorted.length*.95)-1],worstMs:sorted.at(-1),over50ms:sorted.filter(x=>x>50).length,submissionMs:mean('submissionMs'),calls:mean('calls'),triangles:mean('triangles'),contacts:lapContacts,offroadTicks:lapOffroad,quality:renderQuality.settings()};race.pause();}}
  if(qaReadout&&(lapEvidence||frameStats.frames%60===0))qaReadout.textContent=JSON.stringify(lapEvidence??{frames:frameStats.frames,fps:Math.round(frameStats.frames*1000/Math.max(1,frameStats.totalMs)),worstMs:Math.round(frameStats.worstMs),over50ms:frameStats.over50ms,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles});
 }
