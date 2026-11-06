@@ -26,7 +26,7 @@ export function createAdvisory(track,{width=17,maxSpeed=80,lateralAcceleration=1
   const offs=track.map((_,i)=>{const t=i/knotStep,j=Math.floor(t),f=t-j,get=k=>values[(k+knotCount)%knotCount];
    const A=get(j-1),B=get(j),C=get(j+1),D=get(j+2);
    return clamp(.5*(2*B+(-A+C)*f+(2*A-5*B+4*C-D)*f*f+(-A+3*B-3*C+D)*f*f*f),-limit,limit);});
-  const line=track.map((p,i)=>({x:p.x+Math.cos(headings[i])*offs[i],z:p.z-Math.sin(headings[i])*offs[i]}));
+  const line=track.map((p,i)=>({y:p.y??0,x:p.x+Math.cos(headings[i])*offs[i],z:p.z-Math.sin(headings[i])*offs[i]}));
   const ds=line.map((p,i)=>distance(p,line[at(i+1)])),hs=line.map((p,i)=>angle(p,line[at(i+1)]));
   const curve=line.map((_,i)=>delta(hs[at(i+2)],hs[at(i-2)])/(ds[at(i-2)]+ds[at(i-1)]+ds[i]+ds[at(i+1)]));
   const cornerSpeed=curve.map(k=>Math.min(maxSpeed,Math.sqrt(lateralAcceleration/Math.max(Math.abs(k),.0001)),(-1+Math.sqrt(1+4*.018*1.3/Math.max(Math.abs(k),.0001)))/.036*.9));

@@ -2,9 +2,9 @@ import {createAdvisory} from '../src/advisory.js';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {Race,track,nearest,heading,angleDiff,formatTime,trackLength} from '../src/simulation.js';
 function running(){const r=new Race();r.start();for(let i=0;i<61;i++)r.step(.05);return r;}
 function lap(r){for(let i=1;i<=track.length;i++){r.lapTime+=.04;r.recordProgress({index:i%track.length,distance:0});}}
-test('circuit is a finite closed track of plausible length',()=>{assert.equal(track.length,720);assert(trackLength>2950&&trackLength<3100);assert(track.every(p=>Number.isFinite(p.x+p.z)));assert.equal(nearest(track[0].x,track[0].z).index,0);});
+test('circuit is a finite closed track of plausible length',()=>{assert.equal(track.length,720);assert(trackLength>2700&&trackLength<2720);assert(track.every(p=>Number.isFinite(p.x+p.z)));assert.equal(nearest(track[0].x,track[0].z).index,0);});
 test('countdown precedes race and does not add elapsed time',()=>{const r=new Race();r.start();r.step(.05,{gas:true});assert.equal(r.state,'countdown');assert.equal(r.elapsed,0);assert.equal(r.car.speed,0);});
-test('throttle accelerates, S brakes to zero, then reverses',()=>{const r=running();for(let i=0;i<120;i++)r.step(1/120,{gas:true});assert(r.car.speed>10);let stopped=false;for(let i=0;i<240;i++){r.step(1/120,{brake:true});if(r.car.speed===0){stopped=true;break;}}assert(stopped);r.step(1/120,{brake:true});assert(r.car.speed<0);});
+test('throttle accelerates, S holds at zero until released and re-pressed',()=>{const r=running();for(let i=0;i<120;i++)r.step(1/120,{gas:true});assert(r.car.speed>10);let stopped=false;for(let i=0;i<240;i++){r.step(1/120,{brake:true});if(r.car.speed===0){stopped=true;break;}}assert(stopped);for(let i=0;i<120;i++)r.step(1/120,{brake:true});assert.equal(r.car.speed,0);r.step(1/120,{});r.step(1/120,{brake:true});assert(r.car.speed<0);});
 test('pause freezes race and resume returns to same state',()=>{const r=running();r.pause();const t=r.elapsed;r.step(.05,{gas:true});assert.equal(r.elapsed,t);r.start();assert.equal(r.state,'racing');});
 test('3 sequential forward laps finish the race',()=>{const r=running();lap(r);lap(r);lap(r);assert.equal(r.laps.length,3);assert.equal(r.state,'finished');});
 test('reverse lap and skipped gate cannot count',()=>{const r=running();for(let i=719;i>=0;i--)r.recordProgress({index:i,distance:0});assert.equal(r.laps.length,0);r.lastIndex=0;for(let i=1;i<=720;i++){r.lapTime+=.04;r.recordProgress({index:i%720,distance:i<90?20:0});}assert.equal(r.laps.length,0);});
@@ -26,13 +26,13 @@ test('physical advisory-line driver completes 3 safe one-minute laps at 30, 60 a
  }
  assert.equal(r.state,'finished',`${hz} Hz driver failed; gate ${r.nextCheckpoint}, laps ${r.laps.length}`);
  assert.equal(r.laps.length,3);assert.equal(contacts,0);assert(maxDistance<8.5,`driver left tarmac at ${maxDistance}`);
- assert(r.laps.slice(1).every(t=>t>=55&&t<=75),'flying laps must last about one minute');
+ assert(r.laps.slice(1).every(t=>t>=48&&t<=70),'flying laps must last about one minute');
  console.log(`${hz} Hz: ${r.laps.map(formatTime).join(' / ')}, max centerline distance ${maxDistance.toFixed(3)} m; ${contacts} contacts`);
  }
 });
 test('pit lane is drivable and stopping in the garage ends the session',()=>{
- const r=running(),goals=[[228,-135],[230,-110],[230,-90],[230,-82],[231,-78],[234,-74],[244,-73.5]];let g=0;
+ const r=running(),goals=[[224,-135],[226,-110],[226,-90],[226,-82],[227,-78],[230,-74],[240,-73.5]];let g=0;
  for(let f=0;f<60*50&&r.state==='racing';f++){const c=r.car,p=goals[g],d=Math.hypot(p[0]-c.x,p[1]-c.z),e=angleDiff(Math.atan2(p[0]-c.x,p[1]-c.z),c.yaw);if(d<3&&g<goals.length-1)g++;const speed=g===goals.length-1?Math.min(3,d*1.6):g>2?5:10;r.step(1/60,{gas:c.speed<speed&&d>.6,brake:c.speed>.05&&(c.speed>speed+.2||g===goals.length-1&&d<.9),steer:Math.max(-1,Math.min(1,-e*4))});}
- assert.equal(r.state,'parked');assert.equal(r.car.speed,0);assert.equal(r.laps.length,0);assert(r.car.x>243.0);const t=r.elapsed;r.step(.05,{gas:true});assert.equal(r.elapsed,t);
+ assert.equal(r.state,'parked');assert.equal(r.car.speed,0);assert.equal(r.laps.length,0);assert(r.car.x>239.0);const t=r.elapsed;r.step(.05,{gas:true});assert.equal(r.elapsed,t);
 });
-test('pit wall prevents driving through closed garage piers',()=>{const r=running();r.car.x=238;r.car.z=-84;r.car.speed=8;r.step(.01);assert(r.contact);assert.equal(r.car.x,237.2);});
+test('pit wall prevents driving through closed garage piers',()=>{const r=running();r.car.x=238;r.car.z=-84;r.car.speed=8;r.step(.01);assert(r.contact);assert.equal(r.car.x,233.2);});

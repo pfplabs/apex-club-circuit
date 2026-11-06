@@ -5,7 +5,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {loadSponsorMaterial,addCarSponsors,createSponsorPanels,SPONSORS} from './sponsors.js';
 import {createServiceTools,addServiceBox} from './service-tools.js';
 import {prepareWoodMaterial,refineCarMaterials} from './material-refinement.js';
-import {terrainHeight} from './terrain.js';
+import {sampledGroundHeight,terrainHeight} from './terrain.js';
 import {addGarageDoors} from './garage-doors.js';
 import {addFoliage} from './foliage.js';
 import {createSculptedKerbs,addBrakingDetails,addPitLaneDetails} from './track-details.js';
@@ -24,7 +24,8 @@ function texture(kind){
  const t=new THREE.CanvasTexture(canvas);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
 }
 function mesh(geo,material,scene,x=0,y=0,z=0){const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
-function ribbon(left,right,height,material,scene){const p=[],uv=[],idx=[];let travel=0;for(let i=0;i<=track.length;i++){if(i)travel+=Math.hypot(track[i%track.length].x-track[(i-1)%track.length].x,track[i%track.length].z-track[(i-1)%track.length].z);const t=track[i%track.length],a=heading(i%track.length),nx=Math.cos(a),nz=-Math.sin(a);p.push(t.x+nx*left,height,t.z+nz*left,t.x+nx*right,height,t.z+nz*right);uv.push(0,travel/4,1,travel/4);if(i<track.length){const k=i*2;idx.push(k,k+2,k+1,k+1,k+2,k+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=mesh(g,material,scene);m.castShadow=false;return m;}
+function ribbon(left,right,height,material,scene){const p=[],uv=[],idx=[];let travel=0;for(let i=0;i<=track.length;i++){if(i)travel+=Math.hypot(track[i%track.length].x-track[(i-1)%track.length].x,track[i%track.length].z-track[(i-1)%track.length].z);const t=track[i%track.length],a=heading(i%track.length),nx=Math.cos(a),nz=-Math.sin(a);p.push(t.x+nx*left,t.y+height,t.z+nz*left,t.x+nx*right,t.y+height,t.z+nz*right);uv.push(0,travel/4,1,travel/4);if(i<track.length){const k=i*2;idx.push(k,k+2,k+1,k+1,k+2,k+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=mesh(g,material,scene);m.castShadow=false;return m;}
+function terrainUV(g){const p=g.attributes.position,uv=[];for(let i=0;i<p.count;i++)uv.push((p.getX(i)+1000)/2000,(1000-p.getZ(i))/2000);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));return g;}
 function sign(text,bg='#161e20',fg='#eafa3c',w=12,h=2){const c=document.createElement('canvas');c.width=1024;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,1024,128);x.fillStyle=fg;x.textAlign='center';x.textBaseline='middle';x.font='bold 74px Arial';const tw=x.measureText?.(text).width??0;if(tw>950)x.font=`bold ${Math.floor(74*950/tw)}px Arial`;x.fillText(text,512,67);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:tex,side:THREE.DoubleSide,roughness:.9}));}
 export async function createWorld(scene,renderer,options={}){
  let resources=0;const resourceLoaded=stage=>options.onProgress?.({stage,done:++resources,total:17});
@@ -36,6 +37,9 @@ export async function createWorld(scene,renderer,options={}){
  const clouds=new THREE.Group();scene.add(clouds);const cloudMat=new THREE.MeshStandardMaterial({color:'#fffaf1',roughness:1,transparent:true,opacity:.88,depthWrite:false});
  for(let j=0;j<28;j++){const angle=rnd()*Math.PI*2,dist=300+rnd()*400,x=Math.sin(angle)*dist,z=Math.cos(angle)*dist,y=100+rnd()*70;for(let k=0;k<4;k++){const cloud=mesh(new THREE.SphereGeometry(1,10,6),cloudMat,clouds,x+k*16,y+rnd()*5,z);cloud.scale.set(22+rnd()*16,7+rnd()*4,12+rnd()*6);cloud.castShadow=false;}}
  const grass=texture('grass');grass.repeat.set(500,500);const groundMaterial=mat('#b5c684',{map:grass,roughness:1});mesh(new THREE.PlaneGeometry(2000,2000),groundMaterial,scene).rotation.x=-Math.PI/2;
+ // Raised grass shoulders carry the fencing; tapered banks join the terrain mesh.
+ for(const side of [-1,1]){const positions=[];for(let i=0;i<track.length;i++){const pts=[];for(const j of [i,(i+1)%track.length]){const p=track[j],h=heading(j);for(const o of [22,35]){const x=p.x+Math.cos(h)*side*o,z=p.z-Math.sin(h)*side*o;pts.push([x,o===22?p.y+.008:sampledGroundHeight(x,z)+.008,z]);}}positions.push(...pts[0],...pts[2],...pts[1],...pts[1],...pts[2],...pts[3]);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.computeVertexNormals();const bankMaterial=groundMaterial;bankMaterial.side=THREE.DoubleSide;mesh(terrainUV(g),bankMaterial,scene);}
+ terrainUV(ribbon(-22,22,.008,groundMaterial,scene).geometry);
  ribbon(-14.8,14.8,.015,mat('#77766b',{roughness:1}),scene);ribbon(-11.2,11.2,.02,mat('#93a269',{roughness:1}),scene);
  const asphalt=texture('road');const roadMaterial=mat('#b4b9b2',{map:asphalt,roughness:.96});ribbon(-TRACK_WIDTH/2,TRACK_WIDTH/2,.035,roadMaterial,scene);
  const white=mat('#f4f0d8',{roughness:.8}),red=mat('#c83d30',{roughness:.9});ribbon(-8.1,-7.94,.045,white,scene);ribbon(7.94,8.1,.045,white,scene);
@@ -43,7 +47,7 @@ export async function createWorld(scene,renderer,options={}){
  const safety=addTrackSafety(scene);
  // Finish line and grid on the opening straight.
  const start=track[0],h=heading(0);for(let x=-8;x<8;x+=1)for(let z=0;z<2;z++){const t=mesh(new THREE.PlaneGeometry(1,1),((x+z)%2)?white:mat('#172222'),scene,start.x+x,.05,start.z+z);t.rotation.x=-Math.PI/2;}
- for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
+ for(let i=1;i<9;i++){const p=track[(track.length-i*5)%track.length],a=heading((track.length-i*5)%track.length);const line=mesh(new THREE.BoxGeometry(2,.03,.12),white,scene,p.x+Math.cos(a)*(i%2?3:-3),p.y+.06,p.z-Math.sin(a)*(i%2?3:-3));line.rotation.y=a;}
  const metal=mat('#303e41',{metalness:.6,roughness:.5});for(const x of [start.x-12,start.x+12])mesh(new THREE.BoxGeometry(.5,7,.5),metal,scene,x,3.5,start.z+3);
  mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('APEX  /  CLUB CIRCUIT','#142021','#f0f64c',10,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
  addPitLaneDetails(scene,roadMaterial,sign);
@@ -64,16 +68,16 @@ export async function createWorld(scene,renderer,options={}){
  const spectators=addSpectators(scene);
  addGarageDoors(scene);
  const crew=crewAsset.scene;crew.position.set(PIT.buildingX,0,-76.5);crew.rotation.y=-Math.PI/2;buildings.add(crew);
- const garageLight=new THREE.PointLight('#fff1d1',22,16,2);garageLight.position.set(244,3.1,PIT.garageZ);scene.add(garageLight);
+ const garageLight=new THREE.PointLight('#fff1d1',22,16,2);garageLight.position.set(240,3.1,PIT.garageZ);scene.add(garageLight);
  buildings.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
  // Sponsor boards have physical mounts: pit-straight barrier, garage plaques,
  // and the existing gantry. The shared atlas adds only one static material batch.
  const sponsorPanels=[];
  for(let j=0;j<10;j++){const z=-139+j*14;sponsorPanels.push({brand:SPONSORS[j%4].id,position:[193.64,1.23,z],rotation:[0,Math.PI/2,0],width:7.2,height:1.8});mesh(new THREE.BoxGeometry(.12,1.82,7.22),metal,scene,193.56,1.23,z);for(const side of [-1,1])mesh(new THREE.BoxGeometry(.12,2.15,.12),metal,scene,193.5,1.075,z+side*3.2);}
- for(let j=0;j<11;j++){const z=-136.5+j*12;sponsorPanels.push({brand:SPONSORS[j%4].id,position:[238.414,5.94,z],rotation:[0,-Math.PI/2,0],width:2.2,height:.28});mesh(new THREE.BoxGeometry(.035,.30,2.22),metal,scene,238.434,5.94,z);}
+ for(let j=0;j<11;j++){const z=-136.5+j*12;sponsorPanels.push({brand:SPONSORS[j%4].id,position:[234.414,5.94,z],rotation:[0,-Math.PI/2,0],width:2.2,height:.28});mesh(new THREE.BoxGeometry(.035,.30,2.22),metal,scene,234.434,5.94,z);}
  for(const [brand,offset]of [['torqen',-8.3],['hexlume',8.3]])sponsorPanels.push({brand,position:[start.x+offset,6.7,start.z+2.699],rotation:[0,Math.PI,0],width:5.6,height:1.4});
  scene.add(createSponsorPanels(sponsorPanels,sponsorMaterial));
- const parking=mesh(new THREE.PlaneGeometry(6.3,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,244,.165,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',5.3,.29);garageLabel.position.set(238.38,3.8,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);
+ const parking=mesh(new THREE.PlaneGeometry(6.3,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,240,.165,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',5.3,.29);garageLabel.position.set(234.38,3.8,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);
  const guide=createRacingGuide(scene);const brakingDetails=addBrakingDetails(scene,guide.advice,sign);
  addServiceBox(scene);const serviceTools=createServiceTools(scene),pitApproach=createPitApproach(scene);
  const wheelRig=createWheelRig(car);const wheels=wheelRig.map(item=>item.wheel);
@@ -85,7 +89,7 @@ export async function createWorld(scene,renderer,options={}){
    for(const [kind,material,rx,ry]of [['asphalt',roadMaterial,17/2.1,4/2.1],['grass',groundMaterial,500,500],['wood',woodMaterial,1,1]]){
      const [albedo,normal,roughness]=await Promise.all(['albedo','normal','roughness'].map(type=>loader.loadAsync(`${base}textures/${kind}-${type}.jpg`).then(texture=>{resourceLoaded('SURFACE MAPS');return texture;})));
      for(const t of [albedo,normal,roughness]){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
-     albedo.colorSpace=THREE.SRGBColorSpace;material.color.set('#ffffff');material.map=albedo;material.normalMap=normal;material.roughnessMap=roughness;material.normalScale.setScalar(kind==='asphalt'?.35:kind==='wood'?.25:.55);material.roughness=1;material.needsUpdate=true;
+     albedo.colorSpace=THREE.SRGBColorSpace;material.color.set(kind==='grass'?'#728765':'#ffffff');material.map=albedo;material.normalMap=normal;material.roughnessMap=roughness;material.normalScale.setScalar(kind==='asphalt'?.35:kind==='wood'?.25:.55);material.roughness=1;material.needsUpdate=true;
    }
  }
  // Batch static meshes by material; preserve the animated car, guide and sky.

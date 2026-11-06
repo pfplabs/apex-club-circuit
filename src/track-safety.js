@@ -8,15 +8,15 @@ export function pitOpening(p,side){return side===1&&p.x>205&&p.z>PIT.minZ-10&&p.
 export function barrierPlacements(){
  const items=[];let distance=0,next=0;
  for(let i=0;i<track.length;i++){const a=track[i],b=track[(i+1)%track.length],length=Math.hypot(b.x-a.x,b.z-a.z);
-  while(next<distance+length){const t=(next-distance)/length,h=heading(i),p={x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t};
-   for(const side of [-1,1])if(!pitOpening(p,side))items.push({x:p.x+Math.cos(h)*side*SAFETY.barrierOffset,z:p.z-Math.sin(h)*side*SAFETY.barrierOffset,yaw:h,side,index:Math.floor(next/SAFETY.spacing)});
+  while(next<distance+length){const t=(next-distance)/length,h=heading(i),p={y:a.y+(b.y-a.y)*t,x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t};
+   for(const side of [-1,1])if(!pitOpening(p,side))items.push({y:p.y,x:p.x+Math.cos(h)*side*SAFETY.barrierOffset,z:p.z-Math.sin(h)*side*SAFETY.barrierOffset,yaw:h,side,index:Math.floor(next/SAFETY.spacing)});
    next+=SAFETY.spacing;
   }distance+=length;
  }return items;
 }
 function instance(scene,geometry,material,items,name){
  const mesh=new THREE.InstancedMesh(geometry,material,items.length),o=new THREE.Object3D();mesh.name=name;
- items.forEach((p,i)=>{o.position.set(p.x,0,p.z);o.rotation.y=p.yaw;o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.computeBoundingSphere();mesh.receiveShadow=true;scene.add(mesh);return mesh;
+ items.forEach((p,i)=>{o.position.set(p.x,p.y??0,p.z);o.rotation.y=p.yaw;o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.computeBoundingSphere();mesh.receiveShadow=true;scene.add(mesh);return mesh;
 }
 function pocketGeometry(){
  const shape=new THREE.Shape();shape.moveTo(-.19,-.16);shape.lineTo(.19,-.16);shape.quadraticCurveTo(.24,-.16,.24,-.10);shape.lineTo(.24,.10);shape.quadraticCurveTo(.24,.16,.18,.16);shape.lineTo(-.18,.16);shape.quadraticCurveTo(-.24,.16,-.24,.10);shape.lineTo(-.24,-.10);shape.quadraticCurveTo(-.24,-.16,-.19,-.16);
@@ -41,11 +41,11 @@ export function addTrackSafety(scene){
  const fittings=instance(scene,mergeGeometries([caps,plugs,pin]),new THREE.MeshStandardMaterial({color:'#3e4844',roughness:.7}),items,'Fill caps, drain plugs and linking pins');
  caps.dispose();plugs.dispose();pin.dispose();
  const positions=[],uv=[],postItems=[];let distance=0,nextPost=0;
- const offset=(p,h,side,r,y)=>[p.x+Math.cos(h)*side*r,y,p.z-Math.sin(h)*side*r];
+ const offset=(p,h,side,r,y)=>[p.x+Math.cos(h)*side*r,p.y+y,p.z-Math.sin(h)*side*r];
  for(let i=0;i<track.length;i++){const a=track[i],b=track[(i+1)%track.length],ha=heading(i),hb=heading(i+1),length=Math.hypot(b.x-a.x,b.z-a.z);
   for(const side of [-1,1]){if(pitOpening(a,side)||pitOpening(b,side))continue;
    for(const [r0,y0,r1,y1]of [[18.2,.35,18.2,4.1],[18.2,4.1,17.75,4.8]]){const q=[offset(a,ha,side,r0,y0),offset(b,hb,side,r0,y0),offset(a,ha,side,r1,y1),offset(b,hb,side,r1,y1)];positions.push(...q[0],...q[1],...q[2],...q[2],...q[1],...q[3]);const u=distance*3,v=(distance+length)*3;uv.push(u,y0*3,v,y0*3,u,y1*3,u,y1*3,v,y0*3,v,y1*3);}
-   if(distance>=nextPost)postItems.push({x:a.x+Math.cos(ha)*side*18.2,z:a.z-Math.sin(ha)*side*18.2,yaw:ha+(side===1?0:Math.PI)});
+   if(distance>=nextPost)postItems.push({y:a.y,x:a.x+Math.cos(ha)*side*18.2,z:a.z-Math.sin(ha)*side*18.2,yaw:ha+(side===1?0:Math.PI)});
   }if(distance>=nextPost)nextPost=distance+5;distance+=length;
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();
@@ -56,7 +56,7 @@ export function addTrackSafety(scene){
  // shell/fence silhouette, but compact these two batches when crossing a 10 m cell.
  let cell='';const pose=new THREE.Object3D();
  function update(camera){const next=`${Math.floor(camera.x/10)},${Math.floor(camera.z/10)}`;if(next===cell)return;cell=next;let count=0;
-  for(const p of items){if(Math.hypot(camera.x-p.x,camera.z-p.z)>110)continue;pose.position.set(p.x,0,p.z);pose.rotation.y=p.yaw;pose.updateMatrix();pockets.setMatrixAt(count,pose.matrix);fittings.setMatrixAt(count,pose.matrix);count++;}
+  for(const p of items){if(Math.hypot(camera.x-p.x,camera.z-p.z)>110)continue;pose.position.set(p.x,p.y??0,p.z);pose.rotation.y=p.yaw;pose.updateMatrix();pockets.setMatrixAt(count,pose.matrix);fittings.setMatrixAt(count,pose.matrix);count++;}
   for(const m of [pockets,fittings]){m.count=count;m.visible=count>0;m.instanceMatrix.needsUpdate=true;m.frustumCulled=false;}
  }
  update({x:209,z:-165});

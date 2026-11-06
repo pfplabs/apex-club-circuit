@@ -4,9 +4,9 @@ import {track,nearest,trackLength,TRACK_WIDTH} from '../src/simulation.js';
 import {createAdvisory,brakeCue} from '../src/advisory.js';
 const a=createAdvisory(track),n=track.length;
 test('course preserves opening and fits compact bounds',()=>{
- assert.equal(n,720);assert.deepEqual(track[0],{x:209,z:-165});assert(track[1].z>track[0].z);
+ assert.equal(n,720);assert.deepEqual(track[0],{x:209,y:0,z:-165});assert(track[1].z>track[0].z);
  for(const axis of ['x','z'])assert(Math.max(...track.map(p=>p[axis]))-Math.min(...track.map(p=>p[axis]))<850);
- assert(trackLength>2950&&trackLength<3100);console.log(`Course: ${trackLength.toFixed(3)} m`);
+ assert(trackLength>2700&&trackLength<2720);console.log(`Course: ${trackLength.toFixed(3)} m`);
 });
 test('ideal line retains paved safety margin at samples and between samples',()=>{
  assert(a.offsets.every(o=>Number.isFinite(o)&&Math.abs(o)<=TRACK_WIDTH/2-3.5));

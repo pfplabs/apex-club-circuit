@@ -8,3 +8,14 @@
 #load-progress{height:3px;background:#ffffff20;margin-bottom:10px}#load-progress i{display:block;height:100%;width:0;background:#e2ed50;transition:width .18s ease}
 
 #pit-service{--pit-color:#71d9e4;border-top:3px solid var(--pit-color)}#pit-steps{list-style:none;display:flex;gap:8px;padding:0;margin:12px 0;font-size:9px;color:#91a2a7;counter-reset:pit}#pit-steps li{flex:1;counter-increment:pit;border-bottom:2px solid #415054;padding-bottom:7px}#pit-steps li::before{content:counter(pit) " ";font-weight:700}#pit-steps li.current{color:var(--pit-color);border-color:var(--pit-color)}#pit-steps li.complete{color:#bed6b2;border-color:#718e68}#pit-service #pit-instruction{font-size:15px;color:#eef4ee;font-weight:600;margin-bottom:5px}#pit-service #pit-detail{color:#aebfc4;font-size:11px;margin-top:0}body:has(#pit-service:not(.hidden)) #brake-cue{display:none}@media(max-width:700px){#pit-service #pit-instruction{font-size:13px}#pit-steps{font-size:8px;gap:5px}}
+
+#pedals{width:100%;display:grid;gap:6px;margin-top:10px;font:9px monospace;letter-spacing:.12em}
+#pedals label{display:grid;grid-template-columns:72px 1fr;align-items:center;gap:8px}
+#pedals label>span{height:5px;background:#ffffff22;overflow:hidden;border-radius:2px}
+#pedals i{display:block;height:100%;transform:scaleX(0);transform-origin:left;background:#92dfb3;box-shadow:0 0 8px #92dfb388}
+#pedals #brake-input{background:#ff7862;box-shadow:0 0 8px #ff786288}
+#reverse-help{min-height:12px;font-size:8px;letter-spacing:.04em;color:#e5d7ac}
+body.pit-presentation #results{top:12%;left:3%;width:280px;transform:none}
+
+#speedometer{flex-wrap:wrap;width:245px;gap:12px}#pedals{flex-basis:100%}#pedals small{margin-left:0}
+@media(max-width:700px){#speedometer{width:190px}}

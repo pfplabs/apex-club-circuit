@@ -11,10 +11,10 @@ export function pitGuidance(service,car){
  if(service.phase==='rolling'||service.phase==='blocked')return {...result,step:3,message:service.phase==='blocked'?'Garage route obstructed':'Crew guiding you into the garage',detail:service.phase==='blocked'?'Press R to recover; this invalidates the lap.':'Automatic garage entry · session ends once parked'};
  if(service.phase==='released')return {...result,step:4,message:'Service complete — rejoin when ready',detail:'Release both pedals, then W to drive. Follow the exit blend; check the circuit.'};
  if(safelyStopped(car))return {...result,step:3,message:service.settled>=.35?'Choose tyres or return to the garage':'Hold still — confirming your stop',detail:'Tyres: 5-second service, then continue. Garage: end this session.',color:'#bde28b'};
- if(remaining<-.8)return {...result,step:2,message:`Box passed by ${Math.abs(remaining).toFixed(1)} m`,detail:'Stop, then hold S gently to reverse to the marker. Release S at zero.',color:'#f2be70'};
+ if(remaining<-.8)return {...result,step:2,message:`Box passed by ${Math.abs(remaining).toFixed(1)} m`,detail:'Stop, release S, then press S gently to reverse to the marker. Use W to brake while reversing.',color:'#f2be70'};
  if(distance<12&&Math.abs(yaw)>.13)return {...result,step:2,message:'Straighten the car toward the pit exit',detail:'Match the forward chevrons before stopping; use short steering inputs.'};
  if(distance<12&&Math.abs(dx)>=.55){const side=(-Math.cos(car.yaw)*dx+Math.sin(car.yaw)*remaining)>0?'RIGHT':'LEFT';return {...result,step:2,message:`Move ${side} to centre the car`,detail:`${Math.abs(dx).toFixed(1)} m across to the centre marker · creep forward`};}
- if(remaining<Math.max(5,car.speed*car.speed/64+3))return {...result,step:2,message:Math.abs(car.speed)<.3?'Creep forward to the stop marker':'BRAKE — stop at the centre marker',detail:`${Math.max(0,remaining).toFixed(1)} m to stop · release S as speed reaches zero`,color:'#f2be70'};
+ if(remaining<Math.max(5,car.speed*car.speed/38+3))return {...result,step:2,message:Math.abs(car.speed)<.3?'Creep forward to the stop marker':'BRAKE — stop at the centre marker',detail:`${Math.max(0,remaining).toFixed(1)} m to stop · release S as speed reaches zero`,color:'#f2be70'};
  return {...result,message:`Service box in ${Math.round(distance)} m`};
 }
 

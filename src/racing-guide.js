@@ -7,7 +7,8 @@ export function createRacingGuide(scene){
  const p=[],colors=[],segments=[];const n=track.length;
  for(let i=0;i<n;i+=2){const a=advice.line[i],b=advice.line[(i+2)%n],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz),nx=dz/len*.31,nz=-dx/len*.31;
   const ax=a.x+dx*.08,az=a.z+dz*.08,bx=b.x-dx*.08,bz=b.z-dz*.08;
-  p.push(ax-nx,.078,az-nz,bx-nx,.078,bz-nz,ax+nx,.078,az+nz,ax+nx,.078,az+nz,bx-nx,.078,bz-nz,bx+nx,.078,bz+nz);
+  const ay=a.y+(b.y-a.y)*.08+.078,by=b.y-(b.y-a.y)*.08+.078;
+  p.push(ax-nx,ay,az-nz,bx-nx,by,bz-nz,ax+nx,ay,az+nz,ax+nx,ay,az+nz,bx-nx,by,bz-nz,bx+nx,by,bz+nz);
   for(let j=0;j<6;j++)colors.push(.3,.7,.45,0);segments.push(i);
  }
  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(p,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,4).setUsage(THREE.DynamicDrawUsage));

@@ -3,12 +3,12 @@ import * as THREE from 'three';
 import {track,heading} from './simulation.js';
 import {PIT,pitCenterX,pitEdges} from './pit-lane.js';
 
-const point=(p,h,offset,y)=>[p.x+Math.cos(h)*offset,y,p.z-Math.sin(h)*offset];
+const point=(p,h,offset,y)=>[p.x+Math.cos(h)*offset,(p.y??0)+y,p.z-Math.sin(h)*offset];
 function appendQuad(pos,col,a,b,c,d,color){pos.push(...a,...b,...c,...c,...b,...d);for(let j=0;j<6;j++)col.push(...color);}
 export function createSculptedKerbs(scene){
  const positions=[],colors=[];let distance=0;
  for(let i=0;i<track.length;i++){const a=track[i],b=track[(i+1)%track.length],len=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.ceil(len/1.1));
-  for(let j=0;j<steps;j++){const t0=j/steps,t1=(j+1)/steps,p={x:a.x+(b.x-a.x)*t0,z:a.z+(b.z-a.z)*t0},q={x:a.x+(b.x-a.x)*t1,z:a.z+(b.z-a.z)*t1},h=Math.atan2(q.x-p.x,q.z-p.z),color=Math.floor((distance+len*t0)/2.3)%2?[.83,.83,.76]:[.56,.055,.035];
+  for(let j=0;j<steps;j++){const t0=j/steps,t1=(j+1)/steps,p={y:a.y+(b.y-a.y)*t0,x:a.x+(b.x-a.x)*t0,z:a.z+(b.z-a.z)*t0},q={y:a.y+(b.y-a.y)*t1,x:a.x+(b.x-a.x)*t1,z:a.z+(b.z-a.z)*t1},h=Math.atan2(q.x-p.x,q.z-p.z),color=Math.floor((distance+len*t0)/2.3)%2?[.83,.83,.76]:[.56,.055,.035];
    for(const side of [-1,1]){if(side===1&&p.x>205&&p.z>PIT.minZ&&p.z<PIT.maxZ)continue;for(const [o1,y1,o2,y2]of [[8.43,.035,8.93,.06],[8.93,.06,9.26,.043]])appendQuad(positions,colors,point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o1,y1),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o1,y1),point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o2,y2),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o2,y2),color);}
   }distance+=len;
  }
@@ -22,10 +22,10 @@ export function addBrakingDetails(scene,advice,makeSign){
  const tyreGeometry=new THREE.TorusGeometry(.31,.125,8,16);tyreGeometry.rotateX(Math.PI/2);const transforms=[];
  const gravel=new THREE.MeshStandardMaterial({map:gravelTexture(),roughness:1,side:THREE.DoubleSide});
  for(const apex of apexes){const signSide=-Math.sign(advice.curvature[apex])||1;let i=apex,d=0,markers=new Set();
-  while(d<155){const next=(i+719)%720;d+=advice.segments[next];i=next;for(const mark of [150,100,50])if(!markers.has(mark)&&d>=mark){markers.add(mark);const p=track[i],h=heading(i),board=makeSign(String(mark),'#f0eee7','#202826',1.7,1.5);board.position.set(p.x+Math.cos(h)*signSide*12.3,1.45,p.z-Math.sin(h)*signSide*12.3);board.rotation.y=h+Math.PI;scene.add(board);const post=new THREE.Mesh(new THREE.BoxGeometry(.09,1.5,.09),steel);post.position.set(board.position.x,.75,board.position.z);scene.add(post);}}
+  while(d<155){const next=(i+719)%720;d+=advice.segments[next];i=next;for(const mark of [150,100,50])if(!markers.has(mark)&&d>=mark){markers.add(mark);const p=track[i],h=heading(i),board=makeSign(String(mark),'#f0eee7','#202826',1.7,1.5);board.position.set(p.x+Math.cos(h)*signSide*12.3,p.y+1.45,p.z-Math.sin(h)*signSide*12.3);board.rotation.y=h+Math.PI;scene.add(board);const post=new THREE.Mesh(new THREE.BoxGeometry(.09,1.5,.09),steel);post.position.set(board.position.x,p.y+.75,board.position.z);scene.add(post);}}
   const gp=[],guv=[];
   for(let offset=-10;offset<12;offset++){const a=track[(apex+offset+720)%720],b=track[(apex+offset+721)%720],h=Math.atan2(b.x-a.x,b.z-a.z);const q=[point(a,h,signSide*9.4,.047),point(b,h,signSide*9.4,.047),point(a,h,signSide*14.8,.047),point(b,h,signSide*14.8,.047)];gp.push(...q[0],...q[1],...q[2],...q[2],...q[1],...q[3]);guv.push(0,offset,0,offset+1,4,offset,4,offset,0,offset+1,4,offset+1);
-   const length=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.round(length/.86));for(let step=0;step<steps;step++){const t=step/steps;for(let stack=0;stack<3;stack++){const matrix=new THREE.Matrix4().makeTranslation(a.x+(b.x-a.x)*t+Math.cos(h)*signSide*15.1,.16+stack*.27,a.z+(b.z-a.z)*t-Math.sin(h)*signSide*15.1);transforms.push(matrix);}}
+   const length=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.round(length/.86));for(let step=0;step<steps;step++){const t=step/steps;for(let stack=0;stack<3;stack++){const matrix=new THREE.Matrix4().makeTranslation(a.x+(b.x-a.x)*t+Math.cos(h)*signSide*15.1,a.y+(b.y-a.y)*t+.16+stack*.27,a.z+(b.z-a.z)*t-Math.sin(h)*signSide*15.1);transforms.push(matrix);}}
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(gp,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(guv,2));g.computeVertexNormals();const patch=new THREE.Mesh(g,gravel);patch.receiveShadow=true;patch.name='Gravel runoff';scene.add(patch);
  }

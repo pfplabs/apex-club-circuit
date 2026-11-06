@@ -10,7 +10,8 @@ const N = 720;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const angleDiff = (a,b) => Math.atan2(Math.sin(a-b),Math.cos(a-b));
 export {sampleTrack,track} from './course.js';
-import {track} from './course.js';
+import {track,roadSurface} from './course.js';
+import {createPedals,stepDrive} from './vehicle-drive.js';
 export function heading(i){const a=track[(i+N)%N],b=track[(i+1+N)%N];return Math.atan2(b.x-a.x,b.z-a.z);}
 export function nearest(x,z){
   let best=Infinity,index=0;
@@ -24,11 +25,11 @@ export class Race {
  constructor(){this.reset();}
  reset(){
    this.car={x:track[0].x,z:track[0].z,yaw:heading(0),speed:0,steer:0};
-   this.pitService=createPitService();this.servicePedalLatch=false;this.state='ready';this.elapsed=0;this.lapTime=0;this.laps=[];this.nextCheckpoint=1;this.lastIndex=0;this.offroad=false;this.contact=false;this.countdown=3;this.message='';this.invalid=false;this.inPit=false;this.parkedTime=0;
+   this.pedals=createPedals();this.pitService=createPitService();this.servicePedalLatch=false;this.state='ready';this.elapsed=0;this.lapTime=0;this.laps=[];this.nextCheckpoint=1;this.lastIndex=0;this.offroad=false;this.contact=false;this.countdown=3;this.message='';this.invalid=false;this.inPit=false;this.parkedTime=0;
  }
  start(){if(this.state==='paused'){this.state=this.resumeState;return;}if(this.state==='ready'){this.state='countdown';this.countdown=3;}}
  pause(){if(this.state==='racing'||this.state==='countdown'){this.resumeState=this.state;this.state='paused';}}
- resetCar(){const i=nearest(this.car.x,this.car.z).index;const p=track[i];Object.assign(this.car,{x:p.x,z:p.z,yaw:heading(i),speed:0,steer:0});this.lastIndex=i;const {compound,wear}=this.pitService;this.pitService={...createPitService(),compound,wear};this.servicePedalLatch=false;this.invalid=true;}
+ resetCar(){this.pedals=createPedals();const i=nearest(this.car.x,this.car.z).index;const p=track[i];Object.assign(this.car,{x:p.x,z:p.z,yaw:heading(i),speed:0,steer:0});this.lastIndex=i;const {compound,wear}=this.pitService;this.pitService={...createPitService(),compound,wear};this.servicePedalLatch=false;this.invalid=true;}
  choosePitService(choice){return selectPitService(this.pitService,choice,this.car,{raceState:this.state});}
  recordProgress(near){
    const i=near.index,delta=(i-this.lastIndex+N+N/2)%N-N/2;
@@ -61,18 +62,8 @@ export class Race {
    if(this.servicePedalLatch){if(!input.gas&&!input.brake)this.servicePedalLatch=false;else input={...input,gas:false,brake:false};}
    const steer=clamp((input.left?-1:0)+(input.right?1:0)+(input.steer??0),-1,1);
    c.steer+=(steer-c.steer)*Math.min(1,dt*9);
-   const drag=1.2+.0028*c.speed*c.speed+(this.offroad?10:0);
-   // S first brakes forward motion to zero; continuing to hold it selects reverse.
-   // W similarly brakes reverse motion before accelerating forward. Crossing zero
-   // takes its own physics tick, so a braking impulse cannot jump through neutral.
-   if(c.speed>0){
-     const accel=input.brake?-32:input.gas?22:0;
-     c.speed=Math.max(0,c.speed+(accel-drag)*dt);
-   }else if(c.speed<0){
-     const accel=input.gas?24:input.brake?-10:0;
-     c.speed=Math.min(0,c.speed+(accel+drag)*dt);
-   }else if(input.brake&&!input.gas)c.speed=-10*dt;
-   else if(input.gas&&!input.brake)c.speed=22*dt;
+   const surface=roadSurface(c.x,c.z);
+   stepDrive(c,this.pedals,input,dt,{offroad:this.offroad,grip:tyreGrip(this.pitService),grade:this.inPit?0:surface.gradeX*Math.sin(c.yaw)+surface.gradeZ*Math.cos(c.yaw)});
    c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?(60/3.6):82);
    // Positive input is driver-right. Reverse travel naturally reverses yaw rate.
    c.yaw-=c.steer*(1.3/(1+Math.abs(c.speed)*.018))*clamp(c.speed/6,-1,1)*tyreGrip(this.pitService)*dt;
@@ -88,9 +79,9 @@ export class Race {
    if(this.inPit){
      // Buildings and the pit wall are physical bounds. The highlighted garage is open.
      const bay=Math.abs(c.z-PIT.garageZ)<1.7;
-     if(c.z>-145&&c.z<0&&c.x>237.2&&!bay){c.x=237.2;c.speed*=.25;this.contact=true;}
-     if(c.x>244){c.x=244;c.speed=0;}
-     if(bay&&c.x>243.0&&Math.abs(c.speed)<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
+     if(c.z>-145&&c.z<0&&c.x>233.2&&!bay){c.x=233.2;c.speed*=.25;this.contact=true;}
+     if(c.x>240){c.x=240;c.speed=0;}
+     if(bay&&c.x>239&&Math.abs(c.speed)<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
    }
    advanceTyreWear(this.pitService,Math.hypot(c.x-previousX,c.z-previousZ));
    this.recordProgress(nearest(c.x,c.z));
