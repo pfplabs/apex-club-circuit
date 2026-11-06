@@ -23,7 +23,7 @@ The game is self-contained after installation/build: Three.js, all GLBs, texture
 ## Drive
 
 - **W / ↑**: accelerate
-- **S / ↓**: brake
+- **S / ↓**: brake, then reverse after stopping (up to 25 km/h)
 - **A D / ← →**: steer
 - **C**: chase, cockpit or orbit camera
 - **R**: recover to the nearest point on the circuit
@@ -31,7 +31,7 @@ The game is self-contained after installation/build: Three.js, all GLBs, texture
 - **M**: toggle synthesized engine sound (off by default)
 - Touchscreen: hold the on-screen steering and pedal controls; multi-touch supported.
 
-Complete three validated laps, or take the pit lane on the right of the opening straight. Slow down and steer into the yellow-highlighted garage marked **PARK HERE / END SESSION**. Stopping inside ends the session. The garage can be used without completing any laps. The game pauses on loss of focus; resume when you return.
+Complete three validated laps, or take the pit lane on the left of the opening straight. Slow down and steer into the yellow-highlighted garage marked **PARK HERE / END SESSION**. Stopping inside ends the session. The garage can be used without completing any laps. The game pauses on loss of focus; resume when you return.
 
 The custom 1.57 km circuit has a fast opening straight, sweeping corners and a tighter infield section. A normal-input reference driver takes approximately **61 seconds per flying lap** (start lap ~63 seconds), tested at 30, 60 and 120 Hz. Human times vary. Handling is speed-sensitive arcade driving, not simulation-grade tyre physics. Trackside barriers, pit speed limiting, off-road slowdown and garage bounds are implemented.
 
@@ -52,7 +52,7 @@ npm test
 npm run build
 ```
 
-17 automated checks pass, including loading all real GLBs into a finite 83-mesh / ~856k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+24 automated checks pass, including loading all real GLBs into a finite 83-mesh / ~856k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
 
 **Browser visual/performance QA is still pending on a WebGL-enabled computer.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
 

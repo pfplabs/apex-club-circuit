@@ -58,10 +58,21 @@ export class Race {
    const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=n.distance>TRACK_WIDTH/2&&!this.inPit;this.contact=false;
    const steer=clamp((input.left?-1:0)+(input.right?1:0)+(input.steer??0),-1,1);
    c.steer+=(steer-c.steer)*Math.min(1,dt*9);
-   const accel=input.gas?17:0,brake=input.brake?32:0,drag=1.2+.005*c.speed*c.speed+(this.offroad?10:0);
-   c.speed=clamp(c.speed+(accel-brake-drag)*dt,0,this.offroad?25:this.inPit?18:71);
-   // Speed-sensitive arcade steering. Left turns rotate toward -X.
-   c.yaw+=c.steer*(1.3/(1+c.speed*.018))*Math.min(1,c.speed/6)*dt;
+   const drag=1.2+.005*c.speed*c.speed+(this.offroad?10:0);
+   // S first brakes forward motion to zero; continuing to hold it selects reverse.
+   // W similarly brakes reverse motion before accelerating forward. Crossing zero
+   // takes its own physics tick, so a braking impulse cannot jump through neutral.
+   if(c.speed>0){
+     const accel=input.brake?-32:input.gas?17:0;
+     c.speed=Math.max(0,c.speed+(accel-drag)*dt);
+   }else if(c.speed<0){
+     const accel=input.gas?24:input.brake?-10:0;
+     c.speed=Math.min(0,c.speed+(accel+drag)*dt);
+   }else if(input.brake&&!input.gas)c.speed=-10*dt;
+   else if(input.gas&&!input.brake)c.speed=17*dt;
+   c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?18:71);
+   // Positive input is driver-right. Reverse travel naturally reverses yaw rate.
+   c.yaw-=c.steer*(1.3/(1+Math.abs(c.speed)*.018))*clamp(c.speed/6,-1,1)*dt;
    c.x+=Math.sin(c.yaw)*c.speed*dt;c.z+=Math.cos(c.yaw)*c.speed*dt;
    const after=nearest(c.x,c.z);
    if(after.distance>15&&!inPitArea(c.x,c.z)){
@@ -74,7 +85,7 @@ export class Race {
      const bay=Math.abs(c.z-PIT.garageZ)<1.05;
      if(c.x>237.2&&!bay){c.x=237.2;c.speed*=.25;this.contact=true;}
      if(c.x>241){c.x=241;c.speed=0;}
-     if(bay&&c.x>239.2&&c.speed<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
+     if(bay&&c.x>239.2&&Math.abs(c.speed)<2){this.parkedTime+=dt;if(this.parkedTime>.6){this.state='parked';c.speed=0;this.message='PARKED IN THE GARAGE';}}else this.parkedTime=0;
    }
    this.recordProgress(nearest(c.x,c.z));
  }
