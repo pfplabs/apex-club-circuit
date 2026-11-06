@@ -1,3 +1,4 @@
+import {interpolateCar} from './render-motion.js';
 import {pitCamera} from './camera-presentation.js';
 import {roadSurface} from './course.js';
 import * as THREE from 'three';
@@ -70,10 +71,12 @@ for(const b of document.querySelectorAll('[data-control]')){
 }
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 const map=$('map').getContext('2d'),mapBounds={minX:Math.min(...track.map(p=>p.x)),maxX:Math.max(...track.map(p=>p.x)),minZ:Math.min(...track.map(p=>p.z)),maxZ:Math.max(...track.map(p=>p.z))},mapScale=228/Math.max(mapBounds.maxX-mapBounds.minX,mapBounds.maxZ-mapBounds.minZ);function drawMap(){map.clearRect(0,0,260,260);const pt=p=>[130+(p.x-(mapBounds.minX+mapBounds.maxX)/2)*mapScale,130+(p.z-(mapBounds.minZ+mapBounds.maxZ)/2)*mapScale];map.lineWidth=10;map.lineJoin='round';map.strokeStyle='#06131299';map.beginPath();track.forEach((p,i)=>{const [x,y]=pt(p);i?map.lineTo(x,y):map.moveTo(x,y);});map.closePath();map.stroke();map.lineWidth=3;map.strokeStyle='#eceddf';map.stroke();const gate=track[(race.nextCheckpoint*60)%track.length],[gx,gy]=pt(gate);map.fillStyle='#f2fa3d';map.fillRect(gx-3,gy-3,6,6);const [x,y]=pt(race.car);map.fillStyle='#effc43';map.beginPath();map.arc(x,y,5,0,Math.PI*2);map.fill();}
+let previousCar={...race.car};
 let last=performance.now(),clock=0,accumulator=0,wheelAngle=0;const look=new THREE.Vector3(),desired=new THREE.Vector3(),forward=new THREE.Vector3(),right=new THREE.Vector3();
 function animate(now){requestAnimationFrame(animate);const frameMs=now-last,dt=Math.min(frameMs/1000,.05);last=now;if(loaded&&race.state==='racing'){frameStats.frames++;frameStats.totalMs+=frameMs;frameStats.worstMs=Math.max(frameStats.worstMs,frameMs);if(frameMs>50)frameStats.over50ms++;}clock+=dt;if(!world)return;
- accumulator+=dt;while(accumulator>=1/120){race.step(1/120,input);accumulator-=1/120;}
- if(previousState!==race.state)setStateUI();const c=race.car;world.car.position.set(c.x,.035,c.z);world.car.rotation.y=c.yaw+Math.PI;world.sun.position.set(c.x+150,260,c.z+190);world.sun.target.position.set(c.x,roadSurface(c.x,c.z).height,c.z);world.sun.target.updateMatrixWorld();
+ if(roadQA&&new URLSearchParams(location.search).has('drive')){const c=race.car,i=nearest(c.x,c.z).index,target=track[(i+5)%track.length],error=Math.atan2(Math.sin(Math.atan2(target.x-c.x,target.z-c.z)-c.yaw),Math.cos(Math.atan2(target.x-c.x,target.z-c.z)-c.yaw));input.gas=race.elapsed<18&&c.speed<40;input.brake=race.elapsed>=18||c.speed>41;input.steer=Math.max(-1,Math.min(1,-error*3));}
+ accumulator+=dt;while(accumulator>=1/120){previousCar={...race.car};race.step(1/120,input);accumulator-=1/120;}
+ if(previousState!==race.state)setStateUI();const c=race.state==='racing'?interpolateCar(previousCar,race.car,accumulator*120):race.car;world.car.position.set(c.x,.035,c.z);world.car.rotation.y=c.yaw+Math.PI;world.sun.position.set(c.x+150,260,c.z+190);world.sun.target.position.set(c.x,roadSurface(c.x,c.z).height,c.z);world.sun.target.updateMatrixWorld();
  if(race.state==='racing')wheelAngle+=wheelSpinDelta(c.speed,dt);updateWheelRig(world.wheelRig,wheelAngle,c.steer);
  const serviceVisual=updateTyreServiceRig(tyreRig,race.pitService);const groundPose=vehicleGroundPose(c);world.car.position.y=groundPose.height+serviceVisual.jackHeight;world.car.rotation.set(groundPose.pitch,c.yaw+Math.PI,groundPose.roll,'YXZ');updateServiceTools(world.serviceTools,c,serviceVisual);
  if(previousPitPhase==='changing'&&race.pitService.phase==='released')clearInput();previousPitPhase=race.pitService.phase;

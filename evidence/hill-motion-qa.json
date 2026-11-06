@@ -1,0 +1,59 @@
+{
+  "baseCommit": "590039a0f7bf91980641ed20c3e05a40a458f761",
+  "testsPassed": 96,
+  "contactSamples": 28800,
+  "peakVerticalAccelerationBefore": [
+    66.4683,
+    104.0182,
+    154.2317
+  ],
+  "peakVerticalAccelerationAfter": [
+    8.5404,
+    14.6088,
+    19.8812
+  ],
+  "peakPitchAccelerationBefore": [
+    47.5744,
+    74.0925,
+    124.6658
+  ],
+  "peakPitchAccelerationAfter": [
+    1.2159,
+    1.5495,
+    2.1656
+  ],
+  "sweepSpeedsMetersPerSecond": [
+    30,
+    50,
+    70
+  ],
+  "ordinaryControlDriving": {
+    "durationSeconds": 18,
+    "targetSpeedKph": 144,
+    "tickRates": [
+      30,
+      60,
+      120
+    ],
+    "contacts": 0,
+    "offroadFrames": 0,
+    "maxPitchRateRadiansPerSecond": [
+      0.11117,
+      0.1119,
+      0.13274
+    ]
+  },
+  "browserMovingSample": {
+    "frames": 960,
+    "fps": 99,
+    "worstMs": 80,
+    "framesOver50ms": 1,
+    "drawCalls": 57,
+    "triangles": 892745
+  },
+  "limitations": [
+    "Controlled sweep is not a dynamic suspension model.",
+    "Moving browser sample covers opening hills, not sustained full-lap GPU benchmarking.",
+    "Newer uncommitted MacBook wheel/pit work remains excluded."
+  ]
+}
