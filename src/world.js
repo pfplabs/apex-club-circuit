@@ -1,3 +1,4 @@
+import {createSuspensionRig} from './suspension-visuals.js';
 import {apply2013Shape,shape2013SponsorPlacements} from './car-shape-2013.js';
 import {addCarDetail} from './car-detail.js';
 import {addGrandstandDetails} from './trackside-refinement.js';
@@ -90,7 +91,7 @@ export async function createWorld(scene,renderer,options={}){
  const parking=mesh(new THREE.PlaneGeometry(6.3,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,240,.165,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',5.3,.29);garageLabel.position.set(234.38,3.8,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);
  const guide=createRacingGuide(scene);const brakingDetails=addBrakingDetails(scene,guide.advice,sign);
  addServiceBox(scene);const serviceTools=createServiceTools(scene),pitApproach=createPitApproach(scene);
- const wheelRig=createWheelRig(car);const wheels=wheelRig.map(item=>item.wheel);
+ const wheelRig=createWheelRig(car);createSuspensionRig(car,wheelRig);const wheels=wheelRig.map(item=>item.wheel);
  // Photographic CC0 HDR lighting and physically based photographic surface maps.
  // The no-GPU geometry test supplies no renderer and therefore skips image decoding.
  if(renderer){

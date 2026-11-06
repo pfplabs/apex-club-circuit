@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {updateSuspensionRig} from './suspension-visuals.js';
 
 // Keep steering above wheel spin in the transform hierarchy. A single XYZ Euler
 // combines these in the wrong order and makes the tyre axle wobble every turn.
@@ -23,5 +24,6 @@ export function updateWheelRig(rig, angle, steer) {
     steering.rotation.y = front ? -steer * 0.28 : 0;
     wheel.quaternion.copy(baseQuaternion).multiply(spin);
   }
+  if(rig.suspension)updateSuspensionRig(rig.suspension);
 }
 export const wheelSpinDelta = (speed, dt, radius = 0.36) => -speed * dt / radius;

@@ -15,3 +15,7 @@ The private vehicle-history archive `ecfc35a` remains intact in task-7; it is no
 Validation: 133 tests and production build pass. Combined scene: 161 meshes and approximately 1.912 million triangles, including three extra car detail batches. Automated full laps and pit transit run at 30/60/120 Hz; pit transit reports zero contacts/off-road frames. Tests cover road/grass clearance, hill motion, curb taper/contact/grip, wall clearance, car shape, wheel pivots/service and sector timing. Chrome completed soft-tyre service with the integrated car. Existing Vite chunk-size warning remains; no full-lap browser performance benchmark is claimed.
 
 Chrome automated opening-hill drive reached sector 2 and stopped as designed. The short sample reported about 61 FPS, with 40 frames over 50 ms and a 250 ms worst frame; these shared-machine results are not a smooth-frame guarantee. No browser errors were reported.
+
+## Late completed suspension checkpoint
+
+Integrated `8475600` after the car/curb checkpoint: connected chassis wishbones, steering uprights and service-stable suspension. Kept the new detailed wheels and all prior changes. Full combined suite: 134 passing tests and build. Strengthened the suspension test to use the actual integrated detailed wheels and car-detail pass before shaping; steering, tyre spin/removal and transformed chassis attachment checks pass. Scene budget is now 163 meshes, including two instanced suspension batches. Private archive/isolated QA files remain in task-7.
