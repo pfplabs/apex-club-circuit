@@ -39,7 +39,7 @@ The custom 2.09 km circuit combines a long pit straight, northern hairpin, flowi
 ## Actual 3D assets
 
 - `public/assets/car.glb`: detailed white/yellow open-wheel car, red nose stripes, slick tyres, silver wheels, exposed suspension, cockpit, helmet and multi-element wings.
-- `public/assets/pit-crew.glb`: three staged crew with white/yellow suits, visors, jack, wheelgun and spare tyre. Static poses, not an animated tyre-change simulation.
+- `public/assets/pit-crew.glb`: three staged crew with white/yellow suits, visors, jack, wheelgun and spare tyre. Static poses, not an animated tyre-change simulation. The 40 unstaffed bays have dimensional roller shutters; the staffed four-bay garage remains open, including the parking bay.
 - `public/assets/pit-props.glb`: cabinets, racks, tools, hoses and interior lighting details.
 - `public/assets/oak-realistic.glb`: original branched oak geometry and alpha-cutout leaf textures.
 - `public/assets/grandstand.glb`: blue seats, cedar back wall and canopy.
@@ -56,7 +56,7 @@ npm test
 npm run build
 ```
 
-42 automated checks pass, including loading all real GLBs into a finite 134-mesh world (including instanced trees and safety barriers), four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+43 automated checks pass, including loading all real GLBs into a finite 137-mesh world (including instanced trees and safety barriers), four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
 
 **The real WebGL browser has rendered and driven the handling-fix build; the user confirmed the corrected steering feels better. The newer track, guidance, detailed environment and pit route still need browser visual/performance QA.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
 

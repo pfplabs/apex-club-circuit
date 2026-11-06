@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {addGarageDoors} from './garage-doors.js';
 import {addFoliage} from './foliage.js';
 import {createSculptedKerbs,addBrakingDetails,addPitLaneDetails,addArmco} from './track-details.js';
 import {createRacingGuide} from './racing-guide.js';
@@ -49,6 +50,7 @@ export async function createWorld(scene,renderer,options={}){
  const concreteMap=texture('road');concreteMap.repeat.set(8,8);
  pitAsset.scene.traverse(o=>{if(o.isMesh&&o.material.name==='Concrete'){o.material=o.material.clone();o.material.color.set('#777d79');o.material.map=concreteMap;o.material.roughness=.95;}});
  const buildings=new THREE.Group();scene.add(buildings);for(let i=0;i<11;i++){const pit=pitAsset.scene.clone();pit.position.set(PIT.buildingX,0,-135+i*12);pit.rotation.y=-Math.PI/2;buildings.add(pit);}for(let i=0;i<10;i++){const stands=standAsset.scene.clone();stands.position.set(184,0,-135+i*12);stands.rotation.y=Math.PI/2;buildings.add(stands);}for(const z of [-123,-99,-75,-51,-27]){const props=propsAsset.scene.clone();props.position.set(241,0,z);props.rotation.y=-Math.PI/2;buildings.add(props);}
+ addGarageDoors(scene);
  const crew=crewAsset.scene;crew.position.set(241,0,-75);crew.rotation.y=-Math.PI/2;buildings.add(crew);
  const garageLight=new THREE.PointLight('#fff1d1',22,16,2);garageLight.position.set(240,2.7,PIT.garageZ);scene.add(garageLight);
  buildings.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});

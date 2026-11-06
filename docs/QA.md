@@ -2,13 +2,13 @@
 
 ## Current automated checks
 
-- 42 Node tests pass; production Vite build passes.
+- 43 Node tests pass; production Vite build passes.
 - Actual GLB geometry parses and remains finite after batching, including embedded-texture foliage. Image decoding is mocked in Node, not a GPU rendering pass.
 - Correct steering directions at four camera headings; stable front-wheel axes at 72 rotation samples and five steering angles; forward/reverse spin and S brake-to-reverse tested.
 - Revised 2.089 km circuit: normal-input reference driver completes three laps at 30/60/120 Hz without contacts or offroad frames. Flying laps: 63.033 / 62.950 / 62.883 seconds respectively. Maximum centerline distance 5.669 m on an 8.5 m half-width road.
 - Guidance offsets retain a 3.5 m road margin; speed propagation anticipates turns; 16 meaningful deceleration regions. Road and guardrail loop intersections checked.
 - Normal-input entry taper → pit lane → exit rejoin: 30.100 / 30.367 / 30.500 seconds, no contacts or offroad frames. Lane tracking error below 0.18 m. Physical separator blocks crossings from either side.
-- Garage parking through normal inputs passes at all three rates; stopping freezes the session. Crew and equipment stay clear of the parked bay.
+- Garage parking through normal inputs passes at all three rates; stopping freezes the session. Crew, equipment and the new roller shutters stay clear of the parked bay. Forty unstaffed bays are closed; all four bays in the staffed garage remain open.
 - Pause, restart, recovery, countdown, missed gates and backwards lap rejection retained.
 
 ## Real-browser status
