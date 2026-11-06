@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
+import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {track,heading,TRACK_WIDTH,trackLength,PIT} from './simulation.js';
 const rnd=(()=>{let s=31273;return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646;};})();
@@ -35,10 +35,10 @@ export async function createWorld(scene,renderer,options={}){
  const metal=mat('#303e41',{metalness:.6,roughness:.5});for(const x of [start.x-12,start.x+12])mesh(new THREE.BoxGeometry(.5,7,.5),metal,scene,x,3.5,start.z+3);
  mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('F1 2013  /  CLUB CIRCUIT','#142021','#f0f64c',22,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
  // Pit apron, entry wall and lane markings.
- mesh(new THREE.BoxGeometry(26,.05,215),roadMaterial,scene,229,.04,-60);
+ const apronGeometry=new THREE.PlaneGeometry(26,215);const apronUV=apronGeometry.attributes.uv;for(let i=0;i<apronUV.count;i++)apronUV.setXY(i,apronUV.getX(i)*26/17,apronUV.getY(i)*215/4);const apron=mesh(apronGeometry,roadMaterial,scene,229,.065,-60);apron.rotation.x=-Math.PI/2;apron.castShadow=false;
  for(let z=-163;z<45;z+=8)mesh(new THREE.BoxGeometry(.15,.03,4),white,scene,222,.08,z);
  const trees=new THREE.Group();scene.add(trees);const trunkMat=mat('#594c3a'),leaf=mat('#40543a',{roughness:.94});const foliageGeometry=new THREE.IcosahedronGeometry(1,1);for(let i=0;i<230;i++){const a=rnd()*Math.PI*2,d=340+rnd()*160,x=Math.sin(a)*d,z=Math.cos(a)*d;mesh(new THREE.CylinderGeometry(.22,.5,8,7),trunkMat,trees,x,4,z);for(let j=0;j<8;j++){const angle=j*2.399,spread=j?2.7:0;const t=mesh(foliageGeometry,leaf,trees,x+Math.sin(angle)*spread,7.5+(j%3)*2,z+Math.cos(angle)*spread);t.scale.set(2.6+rnd()*1.6,2.5+rnd()*2,2.4+rnd()*1.6);t.rotation.set(rnd(),rnd()*6,rnd());}}
- const terrain=new THREE.PlaneGeometry(2000,2000,100,100);terrain.rotateX(-Math.PI/2);const terrainPos=terrain.attributes.position;for(let i=0;i<terrainPos.count;i++){const x=terrainPos.getX(i),z=terrainPos.getZ(i),d=Math.hypot(x,z);const height=Math.max(0,Math.min(1,(d-380)/150))*(35+Math.sin(x*.012)*Math.cos(z*.009)*35+Math.abs(Math.sin(x*.006+z*.008))*85+Math.sin(x*.026+z*.03)*8);terrainPos.setY(i,height-.1);}terrain.computeVertexNormals();const mountains=mesh(terrain,mat('#6e7864',{roughness:1}),scene);mountains.castShadow=false;
+ const terrain=new THREE.PlaneGeometry(2000,2000,100,100);terrain.rotateX(-Math.PI/2);const terrainPos=terrain.attributes.position;for(let i=0;i<terrainPos.count;i++){const x=terrainPos.getX(i),z=terrainPos.getZ(i),d=Math.hypot(x,z);const height=Math.max(0,Math.min(1,(d-380)/150))*(35+Math.sin(x*.012)*Math.cos(z*.009)*35+Math.abs(Math.sin(x*.006+z*.008))*85+Math.sin(x*.026+z*.03)*8);terrainPos.setY(i,height*.24-.1);}terrain.computeVertexNormals();const mountains=mesh(terrain,groundMaterial,scene);mountains.castShadow=false;
  // Next gate: subtle illuminated side posts rather than a wall across the road.
  const gate=new THREE.Group();const glow=new THREE.MeshBasicMaterial({color:'#eafa51'});for(const side of [-1,1]){const p=mesh(new THREE.CylinderGeometry(.13,.13,2,6),glow,gate,side*7.2,1,0);p.castShadow=false;}scene.add(gate);
  const loader=new GLTFLoader();
@@ -51,7 +51,7 @@ export async function createWorld(scene,renderer,options={}){
  // Photographic CC0 HDR lighting and physically based photographic surface maps.
  // The no-GPU geometry test supplies no renderer and therefore skips image decoding.
  if(renderer){
-   const hdr=await new RGBELoader().loadAsync(`${base}environment/partly-cloudy-sky.hdr`);hdr.mapping=THREE.EquirectangularReflectionMapping;scene.background=hdr;scene.environment=hdr;scene.backgroundIntensity=.85;scene.environmentIntensity=.75;sky.visible=false;clouds.removeFromParent();
+   const hdr=await new HDRLoader().loadAsync(`${base}environment/partly-cloudy-sky.hdr`);hdr.mapping=THREE.EquirectangularReflectionMapping;scene.background=hdr;scene.environment=hdr;scene.backgroundIntensity=.85;scene.environmentIntensity=.75;sky.visible=false;clouds.removeFromParent();
    const loader=new THREE.TextureLoader();
    for(const [kind,material,rx,ry]of [['asphalt',roadMaterial,4,1],['grass',groundMaterial,500,500]]){
      const [albedo,normal,roughness]=await Promise.all(['albedo','normal','roughness'].map(type=>loader.loadAsync(`${base}textures/${kind}-${type}.jpg`)));

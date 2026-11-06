@@ -1,7 +1,7 @@
 # Verification record
 
 ## Passed
-- `npm test`: 16 tests. Includes all GLBs decoded by Three.js GLTFLoader, finite geometry, exactly four wheel pivots, 84 static/animated meshes after material batching and approximately 855,666 triangles.
+- `npm test`: 17 tests. Includes all GLBs decoded by Three.js GLTFLoader, finite geometry, exactly four wheel pivots, 83 static/animated meshes after material batching and approximately 855,656 triangles.
 - `npm run build`: successful Vite production bundle. Three.js is a large vendor dependency; the size warning is informational.
 - Three laps using only throttle/brake/steer inputs, never teleporting or changing lap counters:
   - 30 Hz: 1:02.433 / 1:00.800 / 1:00.833.

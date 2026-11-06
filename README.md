@@ -52,7 +52,7 @@ npm test
 npm run build
 ```
 
-16 automated checks pass, including loading all real GLBs into a finite 84-mesh / ~856k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
+17 automated checks pass, including loading all real GLBs into a finite 83-mesh / ~856k-triangle world, four animated wheels, three full physical laps at 30/60/120 Hz, reverse/missed gate rejection, pause/restart, throttle/brakes, off-road/barrier bounds and a normal-input drive through the pit lane into the garage ending the session.
 
 **Browser visual/performance QA is still pending on a WebGL-enabled computer.** The managed QA browser exposed no usable WebGL context (`GL_VENDOR/GL_RENDERER Disabled`). This is an environment restriction, not evidence of a successful graphical test. Production build succeeds. `evidence/blender-car.png` is an actual Blender asset render, **not a gameplay screenshot**. Any further Blender scene render is likewise labeled. No gameplay trailer has yet been captured.
 
