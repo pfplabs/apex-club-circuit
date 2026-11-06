@@ -1,0 +1,21 @@
+{
+  "triangles": 28160,
+  "draw_calls": 10,
+  "blender_bounds": {
+    "min": [
+      -5.880000114440918,
+      -2.259999990463257,
+      0.06200003623962402
+    ],
+    "max": [
+      5.880000114440918,
+      2.2149999141693115,
+      2.759999990463257
+    ]
+  },
+  "clear_bay_center_x": 1.5,
+  "clear_bay_world_z": -73.5,
+  "equipment_vertices_in_clear_bay": 0,
+  "gltf_front": "+Z",
+  "placement": "Same origin and rotation as pit-building. Rotation Y=-PI/2 at world x241 z-75. Clear bay x=+1.5 (world z=-73.5); no equipment there. Floor front glTF z2.26, back -2.22. A 5.1m car must extend onto apron because existing interior is only 4.6m deep."
+}
