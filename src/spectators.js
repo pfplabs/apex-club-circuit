@@ -1,3 +1,4 @@
+import {GRANDSTAND,standSeat} from './tall-grandstand.js';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -7,7 +8,7 @@ export function spectatorSeats(stands=null){
  for(let stand=0;stand<10;stand++)for(let row=0;row<7;row++)for(let col=0;col<22;col++){
   if(col===7||col===14||random()<.24)continue;
   seats.push({stand,row,col,x:184+1.9-row*.66,y:.28+row*.43+.23,z:-135+stand*12-(-5.25+col*.5),scale:.88+random()*.15,shirt:Math.floor(random()*8),skin:Math.floor(random()*5)});
- }if(stands){return stands.flatMap((p,stand)=>seats.filter(s=>s.stand===0).map(s=>{const lx=-5.25+s.col*.5,lz=-1.9+s.row*.66;return {...s,stand,x:p.x+Math.cos(p.yaw)*lx+Math.sin(p.yaw)*lz,y:p.y+s.y,z:p.z-Math.sin(p.yaw)*lx+Math.cos(p.yaw)*lz,yaw:p.yaw};}));}return seats;
+ }if(stands){return stands.flatMap((p,stand)=>{const local=p.tall?Array.from({length:GRANDSTAND.rows*GRANDSTAND.cols},(_,i)=>({row:Math.floor(i/GRANDSTAND.cols),col:i%GRANDSTAND.cols,scale:.88+random()*.15,shirt:Math.floor(random()*8),skin:Math.floor(random()*5)})).filter(s=>s.col!==9&&s.col!==18&&random()>.18):seats.filter(s=>s.stand===0);return local.map(s=>{if(p.tall){const q=standSeat(s.row,s.col);return {...s,stand,x:p.x+Math.cos(p.yaw)*q.x+Math.sin(p.yaw)*q.z,y:p.y+q.y,z:p.z-Math.sin(p.yaw)*q.x+Math.cos(p.yaw)*q.z,yaw:p.yaw+Math.PI};}const lx=-5.25+s.col*.5,lz=-1.9+s.row*.66;return {...s,stand,x:p.x+Math.cos(p.yaw)*lx+Math.sin(p.yaw)*lz,y:p.y+s.y,z:p.z-Math.sin(p.yaw)*lx+Math.cos(p.yaw)*lz,yaw:p.yaw};});});}return seats;
 }
 export function addSpectators(scene,stands=null){
  const seats=spectatorSeats(stands),group=new THREE.Group();group.name='Grandstand seated spectators';scene.add(group);

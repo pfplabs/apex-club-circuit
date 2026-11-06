@@ -42,8 +42,23 @@ Source-to-target mapping before this final checkpoint:
 | Sectors `5c6e7f0`, `11053b4` | `8fea060` |
 | Physics `cca94b1`; extended pit/sponsors `2e72e02` | `e2e2fb1` |
 | Braking boards `47fdc3c`; start-reference details and HUD fix | `bf9b07d` |
-| Runoff `92dfe22`; cockpit `9d5e50f` | This checkpoint |
+| Runoff `92dfe22`; cockpit `9d5e50f` | `877d28b` |
 
 Private reference/history archives `ecfc35a` and `c7d282b` remain preserved in task-7/apex-car, with original user images and dated intermediate renders. They are deliberately not republished as game assets. Isolated car QA HTML/config and its old scene-budget test remain in that checkout; gameplay code, cockpit SVG and its regeneration tool are included. Old task-2 preview code is already ancestral and superseded. No other completed local F1 gameplay branch was found in the final inventory.
 
 Validation: 145 tests and production build pass, including three physical laps at 30/60/120 Hz, pit entry/service/parking, hill-contact sweeps, runoff clearance/relocated collisions, steering wheel and suspension isolation. Combined scene: 162 meshes, approximately 2.987 million triangles. A short background-browser hill drive reached sector 2 at 144 km/h; roughly 53–54 FPS, 99 ms worst frame and three frames over 50 ms. This is shared-machine evidence, not sustained performance certification. No browser errors. Existing bundle warning remains.
+
+
+## Cockpit, HUD, shadow batching and taller grandstands
+
+Integrated taller-grandstand follow-up `17648380b3c2e8c715e16c1d7c9b8205175e886d` from task-21. Its layout, fourteen-row stand geometry, human-scale crowds and tests are included; retained the newer cockpit, HUD and shadow changes. All previously reconciled gameplay sources remain included. Private history/reference exclusions above remain unchanged.
+
+Cockpit camera now uses a chassis-local eye/target so it follows continuous road pitch and roll, with a fixed 68-degree vertical field of view. The three original helmet components are retained as a separate group, hidden only inside the cockpit and restored in external/pit views. The wheel and its controls are now in frame; the physical cockpit rim still obscures part of the lower wheel at steering lock. The controls remain visual, not working rotary switches.
+
+HUD inspection found speed/gear/pedals explicitly hidden during pause, finish and parking. Telemetry now remains visible after starting the session, including pause. The welcome screen still hides telemetry. No evidence that the active-racing HUD was removed. Removed per-frame lap-counter HTML rebuilding.
+
+The static batcher previously made every merged mesh cast shadows, overriding authored flags on asphalt, surface markings and other scenery. Batches now preserve casting/receiving flags. Matched 1280x720 IAB laps reduced average submitted triangles from 5,129,689 to 2,958,949 (42.3%) before the newer stand replacement. IAB RAF was exactly about 100 FPS and is not used as native hardware performance evidence. A native Chrome lap before the final stand pass averaged 63.0 FPS, p95 21 ms, worst 141 ms, one frame over 50 ms, CPU submission 5.08 ms; zero contacts/offroad ticks. Timing is RAF/CPU submission, not GPU execution time, on a shared machine.
+
+Final combined suite: 146 tests pass and production build passes (existing bundle-size warning). Scene has 174 meshes and 2,079,141 triangles. Tests include 30/60/120 Hz full laps and pit routing, hill clearance, actual wheel/suspension/service geometry, taller stands, helmet component preservation and asphalt shadow flags. Development-only `?qa=road&lap=1` runs normal steering/throttle/brake inputs through a complete lap, reports timing/contact evidence and pauses at completion.
+
+Final native Chrome combined lap: 60.150 s, 4,531 frame samples, average 74.94 FPS, p95 29.1 ms, worst 340 ms, two frames over 50 ms; average CPU submission 4.50 ms, 140 calls and 2.047 million submitted triangles. Zero contacts, zero offroad ticks, no console errors. Cockpit and enlarged stands visually inspected during lap; speed/pedal telemetry remains visible on completion/pause. The remaining isolated hitches are not eliminated; these shared-machine measurements do not establish their exact GPU/OS cause.
