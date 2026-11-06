@@ -14,6 +14,7 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const angleDiff = (a,b) => Math.atan2(Math.sin(a-b),Math.cos(a-b));
 export {sampleTrack,track} from './course.js';
 import {track,roadSurface} from './course.js';
+import {stepHandling} from './vehicle-handling.js';
 import {createPedals,stepDrive} from './vehicle-drive.js';
 export function heading(i){const a=track[(i+N)%N],b=track[(i+1+N)%N];return Math.atan2(b.x-a.x,b.z-a.z);}
 export function nearest(x,z){
@@ -27,12 +28,12 @@ export const formatTime=t=>Number.isFinite(t)?`${Math.floor(t/60).toString().pad
 export class Race {
  constructor(){this.reset();}
  reset(){
-   this.car={x:track[0].x,z:track[0].z,yaw:heading(0),speed:0,steer:0};
+   this.car={x:track[0].x,z:track[0].z,yaw:heading(0),speed:0,steer:0,yawRate:0};
    this.sectors=createSectors();this.pedals=createPedals();this.pitService=createPitService();this.servicePedalLatch=false;this.state='ready';this.elapsed=0;this.lapTime=0;this.laps=[];this.nextCheckpoint=1;this.lastIndex=0;this.offroad=false;this.contact=false;this.countdown=3;this.message='';this.invalid=false;this.inPit=false;this.parkedTime=0;
  }
  start(){if(this.state==='paused'){this.state=this.resumeState;return;}if(this.state==='ready'){this.state='countdown';this.countdown=3;}}
  pause(){if(this.state==='racing'||this.state==='countdown'){this.resumeState=this.state;this.state='paused';}}
- resetCar(){this.pedals=createPedals();const i=nearest(this.car.x,this.car.z).index;const p=track[i];Object.assign(this.car,{x:p.x,z:p.z,yaw:heading(i),speed:0,steer:0});this.lastIndex=i;const {compound,wear}=this.pitService;this.pitService={...createPitService(),compound,wear};this.servicePedalLatch=false;this.invalid=true;}
+ resetCar(){this.pedals=createPedals();const i=nearest(this.car.x,this.car.z).index;const p=track[i];Object.assign(this.car,{x:p.x,z:p.z,yaw:heading(i),speed:0,steer:0,yawRate:0});this.lastIndex=i;const {compound,wear}=this.pitService;this.pitService={...createPitService(),compound,wear};this.servicePedalLatch=false;this.invalid=true;}
  choosePitService(choice){return selectPitService(this.pitService,choice,this.car,{raceState:this.state});}
  recordProgress(near){
    const i=near.index,delta=(i-this.lastIndex+N+N/2)%N-N/2;
@@ -61,19 +62,18 @@ export class Race {
    this.elapsed+=dt;this.lapTime+=dt;
    const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=Math.abs(n.side)>TRACK_WIDTH/2+kerbAllowance(kerbStation(c.x,c.z,n.index),n.side)&&!this.inPit;this.contact=false;
    if(stepPitService(this.pitService,c,dt,{inPit:this.inPit,raceState:this.state})){
-     this.offroad=false;this.contact=false;
+     c.yawRate=0;this.offroad=false;this.contact=false;
      if(this.pitService.phase==='released')this.servicePedalLatch=true;
      if(this.pitService.phase==='parked'){this.state='parked';this.message='PARKED IN THE GARAGE';}
      return;
    }
    if(this.servicePedalLatch){if(!input.gas&&!input.brake)this.servicePedalLatch=false;else input={...input,gas:false,brake:false};}
    const steer=clamp((input.left?-1:0)+(input.right?1:0)+(input.steer??0),-1,1);
-   c.steer+=(steer-c.steer)*Math.min(1,dt*9);
    const surface=roadSurface(c.x,c.z);
    stepDrive(c,this.pedals,input,dt,{offroad:this.offroad,grip:tyreGrip(this.pitService),grade:this.inPit?0:surface.gradeX*Math.sin(c.yaw)+surface.gradeZ*Math.cos(c.yaw)});
    c.speed=clamp(c.speed,this.offroad?-3:this.inPit?-5:-7,this.offroad?25:this.inPit?(60/3.6):82);
    // Positive input is driver-right. Reverse travel naturally reverses yaw rate.
-   c.yaw-=c.steer*(1.3/(1+Math.abs(c.speed)*.018))*clamp(c.speed/6,-1,1)*tyreGrip(this.pitService)*dt;
+   stepHandling(c,steer,dt,{grip:tyreGrip(this.pitService),offroad:this.offroad,brake:this.pedals.brake});
    const previousX=c.x,previousZ=c.z;
    c.x+=Math.sin(c.yaw)*c.speed*dt;c.z+=Math.cos(c.yaw)*c.speed*dt;
    if(c.z>PIT.wallStartZ&&c.z<PIT.wallEndZ&&Math.abs(c.x-PIT.wallX)<1.1){c.x=PIT.wallX+(previousX<PIT.wallX?-1.1:1.1);c.speed*=.35;this.contact=true;}

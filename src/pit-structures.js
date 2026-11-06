@@ -5,7 +5,7 @@ import {PIT,pitCenterX} from './pit-lane.js';
 // separation from the race track; the open ends never cut across the merge.
 export function pitGuideSegments(){
  const segments=[];
- for(const [start,end] of [[-201,-145],[12,92]])for(const side of [-1,1]){
+ for(const [start,end] of [[PIT.minZ,-145],[12,92]])for(const side of [-1,1]){
   for(let z=start;z<end;z+=2){
    const z1=Math.min(z+2,end),x=pitCenterX(z)+side*3.1,x1=pitCenterX(z1)+side*3.1;
    // Both sides must wait until the taper has separated from the race track.

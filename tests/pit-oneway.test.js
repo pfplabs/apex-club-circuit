@@ -6,7 +6,7 @@ import {serviceBox} from '../src/pit-service.js';
 const clamp=x=>Math.max(-1,Math.min(1,x));
 const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
 for(const hz of [30,60,120])for(const choice of ['soft','garage'])test(`normal controls reach garage-side box then ${choice} at ${hz} Hz`,()=>{
- const r=new Race();r.state='racing';Object.assign(r.car,{x:209,z:-225,yaw:0,speed:8});const box=serviceBox();
+ const r=new Race();r.state='racing';Object.assign(r.car,{x:209,z:-270,yaw:0,speed:8});const box=serviceBox();
  const tick=input=>{r.step(1/hz,input);assert(!r.contact);assert(!r.offroad);};
  for(let i=0;i<hz*45&&!r.pitService.settled;i++){const c=r.car,z=Math.min(box.z,c.z+5),x=pitServiceApproachX(z),e=angleDiff(Math.atan2(x-c.x,z-c.z),c.yaw),d=Math.hypot(box.x-c.x,box.z-c.z),v=Math.min(10,Math.max(0,(d-.3)*1.1));tick({gas:c.speed<v&&d>.4,brake:c.speed>v+.1||d<.4,steer:clamp(-e*4)});}
  for(let i=0;i<hz;i++)tick({});assert(r.choosePitService(choice));

@@ -32,7 +32,7 @@ const radius=16, weights=Array.from({length:radius*2+1},(_,i)=>Math.exp(-.5*((i-
 const weightSum=weights.reduce((a,b)=>a+b,0);
 const heights=stations.map((_,i)=>weights.reduce((sum,w,j)=>sum+w*stations[(i+j-radius+N)%N].y,0)/weightSum);
 const slopes=heights.map((_,i)=>(heights[(i+1)%N]-heights[(i-1+N)%N])/2);
-export function sampleTrack(t){const u=((t%1+1)%1)*N,i=Math.floor(u),f=u-i,j=(i+1)%N,p=sampleRawTrack(t);p.y=(2*f**3-3*f*f+1)*heights[i]+(f**3-2*f*f+f)*slopes[i]+(-2*f**3+3*f*f)*heights[j]+(f**3-f*f)*slopes[j];if(Math.abs(p.x-209)<1e-6&&p.z>=-220&&p.z<160){const blend=Math.max(0,Math.min(1,(p.z-110)/50));p.y*=blend**3*(blend*(blend*6-15)+10);}return p;}
+export function sampleTrack(t){const u=((t%1+1)%1)*N,i=Math.floor(u),f=u-i,j=(i+1)%N,p=sampleRawTrack(t);p.y=(2*f**3-3*f*f+1)*heights[i]+(f**3-2*f*f+f)*slopes[i]+(-2*f**3+3*f*f)*heights[j]+(f**3-f*f)*slopes[j];if(p.x>180&&p.z< -220){const entryBlend=Math.max(0,Math.min(1,(-270-p.z)/50));p.y*=entryBlend**3*(entryBlend*(entryBlend*6-15)+10);}if(Math.abs(p.x-209)<1e-6&&p.z>=-220&&p.z<160){const blend=Math.max(0,Math.min(1,(p.z-110)/50));p.y*=blend**3*(blend*(blend*6-15)+10);}return p;}
 export const track=Array.from({length:N},(_,i)=>sampleTrack(i/N));
 // Four render segments per simulation station remove visible/contact faceting
 // without changing lap gates, advisory indices or pit routing.

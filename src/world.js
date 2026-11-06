@@ -1,3 +1,4 @@
+import {addExpandedSponsors,addLongPitEntryPaint} from './expanded-sponsors.js';
 import {createSuspensionRig} from './suspension-visuals.js';
 import {apply2013Shape,shape2013SponsorPlacements} from './car-shape-2013.js';
 import {addCarDetail} from './car-detail.js';
@@ -61,6 +62,7 @@ export async function createWorld(scene,renderer,options={}){
  mesh(new THREE.BoxGeometry(24,1.8,.6),metal,scene,start.x,6.7,start.z+3);const gantry=sign('APEX  /  CLUB CIRCUIT','#142021','#f0f64c',10,1.5);gantry.position.set(start.x,6.7,start.z+2.68);gantry.rotation.y=Math.PI;scene.add(gantry);
  addPitLaneDetails(scene,roadMaterial,sign);
  addPitStructures(scene);
+ addLongPitEntryPaint(scene,white);
  const terrain=new THREE.PlaneGeometry(2000,2000,100,100);terrain.rotateX(-Math.PI/2);const terrainPos=terrain.attributes.position;for(let i=0;i<terrainPos.count;i++){const x=terrainPos.getX(i),z=terrainPos.getZ(i),d=Math.hypot(x,z);terrainPos.setY(i,terrainHeight(x,z));}terrain.computeVertexNormals();const mountains=mesh(terrain,groundMaterial,scene);mountains.castShadow=false;
 
  const loader=new GLTFLoader();
@@ -84,10 +86,11 @@ export async function createWorld(scene,renderer,options={}){
  // Sponsor boards have physical mounts: pit-straight barrier, garage plaques,
  // and the existing gantry. The shared atlas adds only one static material batch.
  const sponsorPanels=[];
- for(let j=0;j<10;j++){const z=-139+j*14;sponsorPanels.push({brand:SPONSORS[j%4].id,position:[193.64,1.23,z],rotation:[0,Math.PI/2,0],width:7.2,height:1.8});mesh(new THREE.BoxGeometry(.12,1.82,7.22),metal,scene,193.56,1.23,z);for(const side of [-1,1])mesh(new THREE.BoxGeometry(.12,2.15,.12),metal,scene,193.5,1.075,z+side*3.2);}
- for(let j=0;j<11;j++){const z=-136.5+j*12;sponsorPanels.push({brand:SPONSORS[j%4].id,position:[234.414,5.94,z],rotation:[0,-Math.PI/2,0],width:2.2,height:.28});mesh(new THREE.BoxGeometry(.035,.30,2.22),metal,scene,234.434,5.94,z);}
+ for(let j=0;j<10;j++){const z=-139+j*14;sponsorPanels.push({brand:SPONSORS[j%SPONSORS.length].id,position:[193.64,1.23,z],rotation:[0,Math.PI/2,0],width:7.2,height:1.8});mesh(new THREE.BoxGeometry(.12,1.82,7.22),metal,scene,193.56,1.23,z);for(const side of [-1,1])mesh(new THREE.BoxGeometry(.12,2.15,.12),metal,scene,193.5,1.075,z+side*3.2);}
+ for(let j=0;j<11;j++){const z=-136.5+j*12;sponsorPanels.push({brand:SPONSORS[j%SPONSORS.length].id,position:[234.414,5.94,z],rotation:[0,-Math.PI/2,0],width:2.2,height:.28});mesh(new THREE.BoxGeometry(.035,.30,2.22),metal,scene,234.434,5.94,z);}
  for(const [brand,offset]of [['torqen',-8.3],['hexlume',8.3]])sponsorPanels.push({brand,position:[start.x+offset,6.7,start.z+2.699],rotation:[0,Math.PI,0],width:5.6,height:1.4});
  scene.add(createSponsorPanels(sponsorPanels,sponsorMaterial));
+ addExpandedSponsors(scene,sponsorMaterial);
  const parking=mesh(new THREE.PlaneGeometry(6.3,2.6),new THREE.MeshBasicMaterial({color:'#f3f04b',transparent:true,opacity:.5}),scene,240,.165,PIT.garageZ);parking.rotation.x=-Math.PI/2;const garageLabel=sign('PARK HERE  /  END SESSION','#122222','#edfc53',5.3,.29);garageLabel.position.set(234.38,3.8,PIT.garageZ);garageLabel.rotation.y=-Math.PI/2;scene.add(garageLabel);
  const guide=createRacingGuide(scene);const brakingDetails=addBrakingDetails(scene,guide.advice,sign);
  addServiceBox(scene);const serviceTools=createServiceTools(scene),pitApproach=createPitApproach(scene);

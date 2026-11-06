@@ -5,7 +5,7 @@ import {PIT,pitCenterX,pitEdges,inPitArea} from '../src/pit-lane.js';
 const clamp=x=>Math.max(-1,Math.min(1,x));
 function started(){const r=new Race();r.start();while(r.state==='countdown')r.step(.05);return r;}
 for(const hz of [30,60,120])test(`normal controls enter pit taper and rejoin circuit at ${hz} Hz`,()=>{
- const r=started(),start=nearest(209,-225).index;
+ const r=started(),start=nearest(209,-270).index;
  Object.assign(r.car,{...track[start],yaw:heading(start),speed:10,steer:0});r.lastIndex=start;
  let contacts=0,offroadFrames=0,pitFrames=0,maxLaneError=0,entered=false,exited=false;
  for(let f=0;f<hz*50&&r.car.z<135;f++){
