@@ -1,6 +1,6 @@
 import {createSectors,completeSector,finishSectorLap} from './sectors.js';
 import {resolvePitGuideContact} from './pit-structures.js';
-import {KERB_ALLOWANCE} from './surface-profile.js';
+import {kerbAllowance,kerbStation} from './kerb-layout.js';
 import {createPitService,selectPitService,stepPitService,advanceTyreWear,tyreGrip} from './pit-service.js';
 // Units are meters and seconds. Rendering has no role in simulation or lap validation.
 export {TRACK_WIDTH} from './course.js';
@@ -59,7 +59,7 @@ export class Race {
    if(this.state==='countdown'){this.countdown-=dt;if(this.countdown<=0){this.state='racing';this.countdown=0;}return;}
    if(this.state!=='racing')return;
    this.elapsed+=dt;this.lapTime+=dt;
-   const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=Math.abs(n.side)>TRACK_WIDTH/2+KERB_ALLOWANCE&&!this.inPit;this.contact=false;
+   const c=this.car,n=nearest(c.x,c.z);this.inPit=inPitArea(c.x,c.z);this.offroad=Math.abs(n.side)>TRACK_WIDTH/2+kerbAllowance(kerbStation(c.x,c.z,n.index),n.side)&&!this.inPit;this.contact=false;
    if(stepPitService(this.pitService,c,dt,{inPit:this.inPit,raceState:this.state})){
      this.offroad=false;this.contact=false;
      if(this.pitService.phase==='released')this.servicePedalLatch=true;

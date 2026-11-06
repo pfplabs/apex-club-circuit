@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import {track,TRACK_WIDTH} from '../src/course.js';
+import {KERB_ZONES} from '../src/kerb-layout.js';
+import {createAdvisory} from '../src/advisory.js';
+const advice=createAdvisory(track,{width:TRACK_WIDTH});
+const pos=(i,side=0)=>{const a=track[i%720],b=track[(i+1)%720],h=Math.atan2(b.x-a.x,b.z-a.z);return [a.x+Math.cos(h)*side,-a.z+Math.sin(h)*side];};
+const path=points=>points.map((p,i)=>(i?'L':'M')+p.map(x=>x.toFixed(2)).join(',')).join(' ');
+const road=path([...track,track[0]].map(p=>[p.x,-p.z]));
+const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1100" viewBox="-490 -485 850 950"><rect x="-490" y="-485" width="850" height="950" fill="#172923"/><style>text{font-family:Arial;fill:#f4f1df;font-size:13px}</style><text x="-450" y="-450" font-size="24">SELECTIVE CIRCUIT CURBS</text><text x="-450" y="-425">Red: inside apex · Gold: outside exit · Cyan: existing advisory driving line</text><path d="${road}" fill="none" stroke="#777b77" stroke-width="22"/><path d="${road}" fill="none" stroke="#303633" stroke-width="20"/><path d="${path(advice.line.map(p=>[p.x,-p.z]))}" fill="none" stroke="#66d6dc" stroke-width="1.2"/>${KERB_ZONES.map((z,n)=>`<path d="${path(Array.from({length:z.end-z.start+1},(_,j)=>pos(z.start+j,z.side*10.45)))}" fill="none" stroke="${z.kind==='apex'?'#ff7167':'#ffdc71'}" stroke-width="3"/><text x="${pos(Math.round((z.start+z.end)/2),z.side*25)[0]}" y="${pos(Math.round((z.start+z.end)/2),z.side*25)[1]}">${Math.floor(n/2)+1}${z.kind==='apex'?'A':'E'}</text>`).join('')}<text x="235" y="50">DRIVE ↑</text><text x="235" y="75">Pit straight</text><text x="-450" y="425">8 corner groups / 16 tapered strips. Broad sweepers and straights have no continuous curb.</text><text x="-450" y="450">Stations follow the actual 2.75km circuit in the forward driving direction.</text></svg>`;
+fs.writeFileSync(new URL('./selective-curb-map.svg',import.meta.url),svg);
+console.log(KERB_ZONES.map(z=>({name:z.name,start:z.start,end:z.end,side:z.side,lineOffset:advice.offsets[Math.round((z.start+z.end)/2)].toFixed(2)})));

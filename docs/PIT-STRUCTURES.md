@@ -27,3 +27,17 @@ Validation: all 122 tests and Vite build pass; background browser inspection con
 ## Turquoise-strip branding
 
 Eight flat, white fictional sponsor marks (RELAYON, TORQEN, STRATUM, HEXLUME), spaced 18 m apart, sit within the 0.65 m turquoise strip. Each paint plane is 0.43 m across the strip, leaving clearance to both white edges; it cannot overlap the garage-side service boxes. Shared alpha-cutout lettering atlas preserves turquoise beneath the letters without adding a material batch. No collision or service geometry changed.
+
+
+## Structure worker reference review (8acbe2a)
+
+
+Inspected user Library image `libfile_ff80b204b5088191862d1c57e6640144` (1080 × 1350), materialized locally at `/Users/jarvis/Documents/Codex/2026-11-05/task-10/reference/pit-reference.png`. This photo is distinct from the initial render mentioned in the request.
+
+Visible reference details:
+- Track-side separator is a low continuous wall, with fence uprights and team control stations behind it.
+- Pit transit strip is dark asphalt with white edge markings. The working apron alongside the garages is broad, pale concrete with individual stop positions.
+- Large reflective, angled glass frontage and a deep roof/canopy belong to the garage building on the right, above the working apron. The photograph does not show a long VIP gallery above the track-side separator.
+- The far-end lane converges toward a guided opening. The image does not expose enough of both junctions to reproduce exact entry/exit wall geometry.
+
+Integration decision: keep the explicit user-requested gallery atop the pit wall in d8773b0; do not silently relocate it based on this photograph. The photo supports the current dark-lane/pale-apron distinction and unobstructed through path. Treat slanted garage-side glazing and canopy as a potential separate reference-driven refinement, not evidence that the existing wall-top gallery matches the photo. No copyrighted sponsor artwork was copied.

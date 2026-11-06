@@ -1,3 +1,5 @@
+import {apply2013Shape,shape2013SponsorPlacements} from './car-shape-2013.js';
+import {addCarDetail} from './car-detail.js';
 import {addGrandstandDetails} from './trackside-refinement.js';
 import {addPitStructures} from './pit-structures.js';
 import {roadSurface,surfaceVertex,surfaceTrack,ROAD_LANES} from './course.js';
@@ -6,7 +8,7 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {loadSponsorMaterial,addCarSponsors,createSponsorPanels,SPONSORS} from './sponsors.js';
+import {loadSponsorMaterial,addCarSponsors,createSponsorPanels,SPONSORS,CAR_SPONSOR_PLACEMENTS} from './sponsors.js';
 import {createServiceTools,addServiceBox} from './service-tools.js';
 import {prepareWoodMaterial,refineCarMaterials} from './material-refinement.js';
 import {sampledGroundHeight,terrainHeight} from './terrain.js';
@@ -64,7 +66,7 @@ export async function createWorld(scene,renderer,options={}){
  const [carAsset,pitAsset,standAsset,treeAsset,propsAsset,crewAsset]=await Promise.all(['car.glb','pit-building.glb','grandstand.glb','oak-realistic.glb','pit-props.glb','pit-crew.glb'].map(p=>loader.loadAsync(`${base}${p}`).then(asset=>{resourceLoaded('3D MODELS');return asset;})));
  const sponsorMaterial=renderer?await loadSponsorMaterial(`${base}sponsors/sponsor-atlas.png`,Math.min(8,renderer.capabilities.getMaxAnisotropy())):new THREE.MeshStandardMaterial({name:'Fictional sponsor atlas'});
  resourceLoaded('SPONSOR GRAPHICS');
- const car=carAsset.scene;refineCarMaterials(car);refineWheelAppearance(car);addCarSponsors(car,sponsorMaterial);car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
+ const car=carAsset.scene;refineCarMaterials(car);refineWheelAppearance(car);addCarDetail(car);apply2013Shape(car);addCarSponsors(car,sponsorMaterial,shape2013SponsorPlacements(CAR_SPONSOR_PLACEMENTS));car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(car);
  const woodland=addFoliage(scene,treeAsset,track);
  // Darken and break up the previously featureless concrete apron and walls.
  const concreteMap=texture('road');concreteMap.repeat.set(8,8);

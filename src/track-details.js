@@ -1,4 +1,5 @@
-import {TRACK_WIDTH} from './course.js';
+import {TRACK_WIDTH,surfaceTrack,surfaceVertex,ROAD_SUBDIVISIONS} from './course.js';
+import {kerbScale,kerbOffset} from './kerb-layout.js';
 import {KERB_PROFILE} from './surface-profile.js';
 import {addPitLayout} from './pit-layout.js';
 import {addTyreBarrierLOD} from './tyre-lod.js';
@@ -10,13 +11,24 @@ const point=(p,h,offset,y)=>[p.x+Math.cos(h)*offset,(p.y??0)+y,p.z-Math.sin(h)*o
 function appendQuad(pos,col,a,b,c,d,color){pos.push(...a,...b,...c,...c,...b,...d);for(let j=0;j<6;j++)col.push(...color);}
 export function createSculptedKerbs(scene){
  const positions=[],colors=[];let distance=0;
- for(let i=0;i<track.length;i++){const a=track[i],b=track[(i+1)%track.length],len=Math.hypot(b.x-a.x,b.z-a.z),steps=Math.max(1,Math.ceil(len/1.1));
-  for(let j=0;j<steps;j++){const t0=j/steps,t1=(j+1)/steps,p={y:a.y+(b.y-a.y)*t0,x:a.x+(b.x-a.x)*t0,z:a.z+(b.z-a.z)*t0},q={y:a.y+(b.y-a.y)*t1,x:a.x+(b.x-a.x)*t1,z:a.z+(b.z-a.z)*t1},h=Math.atan2(q.x-p.x,q.z-p.z),color=Math.floor((distance+len*t0)/2.3)%2?[.83,.83,.76]:[.56,.055,.035];
-   for(const side of [-1,1]){if(side===1&&p.x>205&&p.z>PIT.minZ&&p.z<PIT.maxZ)continue;for(const [o1,y1,o2,y2]of KERB_PROFILE.slice(0,-1).map((p,i)=>[...p,...KERB_PROFILE[i+1]]))appendQuad(positions,colors,point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o1,y1),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o1,y1),point(p,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t0,side*o2,y2),point(q,heading(i)+Math.atan2(Math.sin(heading(i+1)-heading(i)),Math.cos(heading(i+1)-heading(i)))*t1,side*o2,y2),color);}
-  }distance+=len;
+ for(let i=0;i<surfaceTrack.length;i++){
+  const a=surfaceTrack[i],b=surfaceTrack[(i+1)%surfaceTrack.length],len=Math.hypot(b.x-a.x,b.z-a.z);
+  const color=Math.floor(distance/2.3)%2?[.83,.83,.76]:[.56,.055,.035];
+  for(const side of [-1,1]){
+   const s0=kerbScale(i/ROAD_SUBDIVISIONS,side),s1=kerbScale((i+1)/ROAD_SUBDIVISIONS,side);
+   if(!s0&&!s1)continue;
+   const vertex=(j,offset,height,scale)=>{const p=surfaceVertex(j,side*kerbOffset(offset,scale));return [p.x,p.y+.035+(height-.035)*scale,p.z];};
+   for(let k=0;k<KERB_PROFILE.length-1;k++){
+    const [o1,y1]=KERB_PROFILE[k],[o2,y2]=KERB_PROFILE[k+1];
+    appendQuad(positions,colors,vertex(i,o1,y1,s0),vertex(i+1,o1,y1,s1),vertex(i,o2,y2,s0),vertex(i+1,o2,y2,s1),color);
+   }
+  }
+  distance+=len;
  }
- const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.83,side:THREE.DoubleSide}));mesh.receiveShadow=true;mesh.name='Continuous sloped kerbs';scene.add(mesh);
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.83,side:THREE.DoubleSide}));mesh.receiveShadow=true;mesh.name='Selective apex and exit kerbs';scene.add(mesh);
+ return mesh;
 }
+
 function gravelTexture(){const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#a79b80';x.fillRect(0,0,256,256);let seed=418;for(let i=0;i<12000;i++){seed=(seed*16807)%2147483647;const a=seed/2147483647;seed=(seed*16807)%2147483647;const b=seed/2147483647;const v=105+Math.floor(a*85);x.fillStyle=`rgb(${v+13},${v+7},${v-10})`;x.fillRect(a*256,b*256,1+(i%3),1+(i%2));}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;return t;}
 export function addBrakingDetails(scene,advice,makeSign){
  const candidates=advice.curvature.map((k,i)=>({i,k:Math.abs(k)})).sort((a,b)=>b.k-a.k),apexes=[];
