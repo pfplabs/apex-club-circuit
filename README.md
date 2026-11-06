@@ -129,3 +129,9 @@ Merged saved snapshot `7cf6801e748db51124e721f86e7e3a26a9f4cb2f` with hill-motio
 Validation: all 108 tests and production build pass, including hill motion, ordinary-control pit routing, wheel contact/pivots/service isolation, and graphics controls. Browser checks completed a soft-tyre service, switched Fast/textures-off then Photo/textures-on, and reported no console errors. The scene budget is 153 meshes: the prior 149 plus four pit material batches.
 
 Limits: this incorporates the saved MacBook snapshot only; any later unsaved or unpushed work is outside this merge. The graphics default is Balanced, with Photo selectable. First-time quality/texture swaps may pause for shader compilation. The existing bundle-size warning remains. Browser checks are short runs, not sustained full-lap GPU benchmarks or a claim of final photorealism.
+
+### One-way pit revision
+
+The pit through lane is now 4 m wide and centred at x=225.5 from entry taper through exit taper. The main pit pavement is 11 m wide including the garage working apron, rather than the previous 13.25 m. Tyre service boxes move 5 m toward the garages to x=231: their centres sit 3.45 m from the facade, separate from the through lane. One-way arrows and labels replace the misleading road divider. The service guide branches toward the box instead of running straight down the through lane.
+
+The automatic garage turn uses a 2.5 m radius and preserves swept full-car collision checks. Tests drive normal throttle, brake and steering into the box, choose tyres and rejoin, or choose garage and park, at 30/60/120 Hz without offroad frames or barrier contacts. All 115 tests and the production build pass. Hill geometry, refined wheels and graphics controls are retained. These are game-scale dimensions; this is not a certified real circuit layout.

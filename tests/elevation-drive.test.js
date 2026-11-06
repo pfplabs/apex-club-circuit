@@ -25,8 +25,8 @@ for(const hz of [30,60,120])test(`held brake never slips into reverse; intention
  while(r.car.speed<0)r.step(1/hz,{gas:true});assert.equal(r.car.speed,0);r.step(1/hz,{gas:true});assert(r.car.speed>0);
  const car={speed:0},p=createPedals();for(let t=0;t<STOP_DWELL/2;t+=1/hz)stepDrive(car,p,{},1/hz);stepDrive(car,p,{brake:true},1/hz);assert.equal(car.speed,0,'reverse cannot engage before stationary dwell');
 });
-test('pit is a six metre transit lane with a separate compact service apron',()=>{
- assert.equal(pitEdges(-155)[1]-pitEdges(-155)[0],6);assert.equal(pitCenterX(-80),G.boxX);assert.equal(G.parkX-PIT.buildingX,-.5);assert.equal(G.facadeX-G.boxX,8.449999999999989);assert(pitEdges(-80)[1]-pitEdges(-80)[0]<14);
+test('pit has a four metre one-way lane distinct from garage-side service boxes',()=>{
+ assert.equal(pitEdges(-155)[1]-pitEdges(-155)[0],4);assert.equal(pitCenterX(-80),PIT.laneX);assert(G.boxX-pitCenterX(-80)>5);assert.equal(G.parkX-PIT.buildingX,-.5);assert(Math.abs(G.facadeX-G.boxX-3.45)<1e-9);assert(pitEdges(-80)[1]-pitEdges(-80)[0]<14);
 });
 test('service cameras expose actual wheel motion, stay outside garage and restore driver mode',()=>{
  const car={...serviceBox(),speed:0};const shot=pitCamera('changing',car);assert(shot.position.x<car.x);assert.equal(shot.target.x,car.x);const visual=serviceVisual({phase:'changing',time:2.5});assert(visual.wheelOut>0&&visual.jackHeight>0);

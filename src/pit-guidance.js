@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {serviceBox,safelyStopped,SERVICE_SECONDS} from './pit-service.js';
-import {pitCenterX} from './pit-lane.js';
+import {pitCenterX,pitServiceApproachX} from './pit-lane.js';
 
 // Guidance only: never moves the car or relaxes the service safety checks.
 export function pitGuidance(service,car){
@@ -23,7 +23,7 @@ export function createPitApproach(scene){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([-.55,0,-.6,0,0,0,.55,0,-.6,.55,0,-.6,0,0,0,0,0,.45],3));g.computeVertexNormals();
  const material=new THREE.MeshBasicMaterial({color:'#71d9e4',side:THREE.DoubleSide,transparent:true,opacity:.8,depthWrite:false});
  const arrows=new THREE.InstancedMesh(g,material,24),o=new THREE.Object3D();
- for(let i=0;i<24;i++){const z=-199+i*5;o.position.set(pitCenterX(z),.11,z);o.rotation.y=Math.atan2(pitCenterX(z+1)-pitCenterX(z),1);o.updateMatrix();arrows.setMatrixAt(i,o.matrix);}
+ for(let i=0;i<24;i++){const z=-199+i*5;o.position.set(pitServiceApproachX(z),.11,z);o.rotation.y=Math.atan2(pitServiceApproachX(z+1)-pitServiceApproachX(z),1);o.updateMatrix();arrows.setMatrixAt(i,o.matrix);}
  arrows.frustumCulled=false;group.add(arrows);
  const target=new THREE.Mesh(new THREE.RingGeometry(.35,.65,32),material);target.rotation.x=-Math.PI/2;const p=serviceBox();target.position.set(p.x,.115,p.z);group.add(target);scene.add(group);
  group.visible=false;return {group,update(race){group.visible=race.state==='racing'&&race.inPit&&race.pitService.phase==='offered';}};

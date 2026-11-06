@@ -9,10 +9,10 @@ test('painted pit layout separates a clear transit corridor from unchanged servi
  const positions=pitPositions();assert.equal(positions.length,11);assert.equal(positions.filter(p=>p.active).length,1);assert.deepEqual({x:positions[5].x,z:positions[5].z},{x:serviceBox().x,z:serviceBox().z});
  const x=(L.outerX+L.dividerX)/2;
  for(let z=L.startZ;z<L.endZ;z+=.5){assert(inPitArea(x,z));assert(garagePoseClear({x,z,yaw:0}));assert(x-G.halfWidth>pitEdges(z)[0]);assert(x+G.halfWidth<L.dividerX);}
- for(const b of positions){assert(b.x-1.45>L.dividerX);assert(Math.abs(b.z-(G.garageZ-4))%12===0);}
+ for(const b of positions){assert(b.x-1.45>L.dividerX);assert(Math.abs(b.z-(G.garageZ-G.turnRadius))%12===0);}
  const oldDocument=globalThis.document;globalThis.document={createElement:()=>({getContext:()=>({fillRect(){},fillText(){}})})};
  const group=addPitLayout(new THREE.Scene(),new THREE.MeshStandardMaterial(),()=>new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshStandardMaterial()));globalThis.document=oldDocument;group.updateMatrixWorld(true);
- const surface=group.getObjectByName('Unobstructed 3m through lane');assert(Math.abs(surface.position.y-vehicleGroundPose({x,z:-80,yaw:0}).height)<=.002);const uv=surface.geometry.attributes.uv;assert(Math.abs(uv.getY(0)-uv.getY(2))>30,'long pavement must use metric UVs instead of stretching one tile');
+ const surface=group.getObjectByName('One-way 4m through lane');assert(Math.abs(surface.position.y-vehicleGroundPose({x,z:-80,yaw:0}).height)<=.002);const uv=surface.geometry.attributes.uv;assert(Math.abs(uv.getY(0)-uv.getY(2))>30,'long pavement must use metric UVs instead of stretching one tile');
  group.traverse(o=>{if(!o.isMesh)return;const bounds=new THREE.Box3().setFromObject(o);assert(bounds.max.y<.09,'all additions must be flat paint, not collision obstacles');});
 });
 test('late photographic asphalt maps propagate to pit clones while preserving apron tint',async()=>{

@@ -39,13 +39,12 @@ export function addBrakingDetails(scene,advice,makeSign){
 
 export function addPitLaneDetails(scene,roadMaterial,makeSign){
  addPitLayout(scene,roadMaterial,makeSign);
- const positions=[],uv=[],stripe=[],white=new THREE.MeshStandardMaterial({color:'#eeeae0',roughness:.86}),concrete=new THREE.MeshStandardMaterial({color:'#9b9f96',roughness:.95});
+ const positions=[],uv=[],white=new THREE.MeshStandardMaterial({color:'#eeeae0',roughness:.86}),concrete=new THREE.MeshStandardMaterial({color:'#9b9f96',roughness:.95});
  let distance=0;
  for(let z=PIT.minZ;z<PIT.maxZ;z+=2){const [a,b]=pitEdges(z),[c,d]=pitEdges(z+2);positions.push(a,.035,z,c,.035,z+2,b,.035,z,b,.035,z,c,.035,z+2,d,.035,z+2);uv.push(a/17,distance/4,c/17,(distance+2)/4,b/17,distance/4,b/17,distance/4,c/17,(distance+2)/4,d/17,(distance+2)/4);distance+=2;
-  if((z<-145||z>8)&&(z%8===-7||Math.abs(z%8)<2)){const x=pitCenterX(z),q=pitCenterX(z+3);stripe.push(x-.07,.073,z,q-.07,.073,z+3,x+.07,.073,z,x+.07,.073,z,q-.07,.073,z+3,q+.07,.073,z+3);}
+
  }
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const apron=new THREE.Mesh(geo,roadMaterial);apron.receiveShadow=true;scene.add(apron);
- const lines=new THREE.BufferGeometry();lines.setAttribute('position',new THREE.Float32BufferAttribute(stripe,3));lines.computeVertexNormals();scene.add(new THREE.Mesh(lines,new THREE.MeshStandardMaterial({color:'#ddd7bd',side:THREE.DoubleSide,roughness:.9})));
  const wall=new THREE.Mesh(new THREE.BoxGeometry(.38,.9,PIT.wallEndZ-PIT.wallStartZ),concrete);wall.position.set(PIT.wallX,.45,(PIT.wallStartZ+PIT.wallEndZ)/2);wall.castShadow=true;wall.receiveShadow=true;scene.add(wall);
  for(const z of [PIT.wallStartZ,PIT.wallEndZ]){const end=new THREE.Mesh(new THREE.BoxGeometry(.68,.92,2),new THREE.MeshStandardMaterial({color:'#e7c834',roughness:.8}));end.position.set(PIT.wallX,.46,z);scene.add(end);}
  for(const [label,x,z,rot]of [['PIT ENTRY  /  60',225,-190,Math.PI],['PIT EXIT  →',232,42,Math.PI]]){const board=makeSign(label,'#f0eee3','#222e2b',6,1);board.position.set(x,2.7,z);board.rotation.y=rot;scene.add(board);const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,.12),white);post.position.set(x,1.25,z);scene.add(post);}
