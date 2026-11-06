@@ -1,0 +1,40 @@
+{
+  "asset": "clean_asphalt",
+  "official_page": "https://polyhaven.com/a/clean_asphalt",
+  "author": "Dimitrios Savva",
+  "license": "CC0",
+  "physical_width_m": 2.1,
+  "api_hash_comparison": "unavailable; hashes below are computed locally",
+  "files": [
+    {
+      "file": "clean_asphalt_nor_gl_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/clean_asphalt/clean_asphalt_nor_gl_1k.jpg",
+      "size_bytes": 776360,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "99cdf6b6f0b8a319d206e1d561bf2a5d9933d8d33e1d685f8e25388101d21310"
+    },
+    {
+      "file": "clean_asphalt_rough_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/clean_asphalt/clean_asphalt_rough_1k.jpg",
+      "size_bytes": 641634,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "2280be133c104eb04370b625ebcc7f6709d2173b43ae2cd15a0074c26f492bf9"
+    },
+    {
+      "file": "clean_asphalt_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/clean_asphalt/clean_asphalt_diff_1k.jpg",
+      "size_bytes": 697630,
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "sha256": "ddf9224e9cfa3eb2998d9097e4cd34bd3630c85e0e6798e5a0a000415a684083"
+    }
+  ]
+}

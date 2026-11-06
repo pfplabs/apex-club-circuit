@@ -56,7 +56,7 @@ let last=performance.now(),clock=0,accumulator=0,wheelAngle=0;const look=new THR
 function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;clock+=dt;if(!world)return;
  accumulator+=dt;while(accumulator>=1/120){race.step(1/120,input);accumulator-=1/120;}
  if(previousState!==race.state)setStateUI();const c=race.car;world.car.position.set(c.x,.035,c.z);world.car.rotation.y=c.yaw+Math.PI;world.sun.position.set(c.x+150,260,c.z+190);world.sun.target.position.set(c.x,0,c.z);world.sun.target.updateMatrixWorld();
- wheelAngle+=wheelSpinDelta(c.speed,dt);updateWheelRig(world.wheelRig,wheelAngle,c.steer);
+ if(race.state==='racing')wheelAngle+=wheelSpinDelta(c.speed,dt);updateWheelRig(world.wheelRig,wheelAngle,c.steer);
  forward.set(Math.sin(c.yaw),0,Math.cos(c.yaw));right.set(Math.cos(c.yaw),0,-Math.sin(c.yaw));
  if(race.state==='ready'){
    const a=c.yaw+Math.PI*.28+Math.sin(clock*.12)*.2;desired.set(c.x+Math.sin(a)*8.4,3.1,c.z+Math.cos(a)*8.4);look.set(c.x+right.x*2.1,1,c.z+right.z*2.1);

@@ -61,10 +61,10 @@ export async function createWorld(scene,renderer,options={}){
  if(renderer){
    const hdr=await new HDRLoader().loadAsync(`${base}environment/partly-cloudy-sky.hdr`);hdr.mapping=THREE.EquirectangularReflectionMapping;scene.background=hdr;scene.environment=hdr;scene.backgroundIntensity=.85;scene.environmentIntensity=.75;sky.visible=false;clouds.removeFromParent();
    const loader=new THREE.TextureLoader();
-   for(const [kind,material,rx,ry]of [['asphalt',roadMaterial,4,1],['grass',groundMaterial,500,500]]){
+   for(const [kind,material,rx,ry]of [['asphalt',roadMaterial,17/2.1,4/2.1],['grass',groundMaterial,500,500]]){
      const [albedo,normal,roughness]=await Promise.all(['albedo','normal','roughness'].map(type=>loader.loadAsync(`${base}textures/${kind}-${type}.jpg`)));
      for(const t of [albedo,normal,roughness]){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
-     albedo.colorSpace=THREE.SRGBColorSpace;material.color.set('#ffffff');material.map=albedo;material.normalMap=normal;material.roughnessMap=roughness;material.normalScale.set(.55,.55);material.roughness=1;material.needsUpdate=true;
+     albedo.colorSpace=THREE.SRGBColorSpace;material.color.set('#ffffff');material.map=albedo;material.normalMap=normal;material.roughnessMap=roughness;material.normalScale.setScalar(kind==='asphalt'?.35:.55);material.roughness=1;material.needsUpdate=true;
    }
  }
  // Batch static meshes by material; preserve the animated car, guide and sky.
