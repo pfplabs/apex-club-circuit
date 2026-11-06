@@ -1,3 +1,4 @@
+import {PIT} from './pit-lane.js';
 // Framework-free simulation. Positions are metres; time is simulated seconds.
 // Service is an independent substate of Race.state === 'racing', so existing pause works.
 export const COMPOUNDS = Object.freeze({
@@ -6,7 +7,7 @@ export const COMPOUNDS = Object.freeze({
   hard: Object.freeze({label:'HARD',color:'#f4f4ed',grip:.975,wearPerKm:.055}),
 });
 export const SERVICE_SECONDS = 5;
-export const SERVICE_GEOMETRY = Object.freeze({boxX:231,garageZ:-73.5,turnRadius:2.5,parkX:240,wallX:220,facadeX:234.45,backX:246.3,doorHalfWidth:2.78,halfWidth:1.017,halfLength:2.65});
+export const SERVICE_GEOMETRY = Object.freeze({boxX:231,garageZ:-73.5,turnRadius:2.5,parkX:240,wallX:PIT.wallX,facadeX:234.45,backX:246.3,doorHalfWidth:2.78,halfWidth:1.017,halfLength:2.65});
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const diff=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 const smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};

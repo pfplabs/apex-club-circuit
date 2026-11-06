@@ -1,3 +1,4 @@
+import {resolvePitGuideContact} from './pit-structures.js';
 import {KERB_ALLOWANCE} from './surface-profile.js';
 import {createPitService,selectPitService,stepPitService,advanceTyreWear,tyreGrip} from './pit-service.js';
 // Units are meters and seconds. Rendering has no role in simulation or lap validation.
@@ -71,6 +72,7 @@ export class Race {
    const previousX=c.x,previousZ=c.z;
    c.x+=Math.sin(c.yaw)*c.speed*dt;c.z+=Math.cos(c.yaw)*c.speed*dt;
    if(c.z>PIT.wallStartZ&&c.z<PIT.wallEndZ&&Math.abs(c.x-PIT.wallX)<1.1){c.x=PIT.wallX+(previousX<PIT.wallX?-1.1:1.1);c.speed*=.35;this.contact=true;}
+   if(resolvePitGuideContact(c,{x:previousX,z:previousZ}))this.contact=true;
    const after=nearest(c.x,c.z);
    if(after.distance>15&&!inPitArea(c.x,c.z)){
      const p=track[after.index],h=heading(after.index),side=Math.sign(after.side)||1;

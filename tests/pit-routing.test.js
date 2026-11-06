@@ -25,7 +25,7 @@ for(const direction of [-1,1])test(`separator blocks a normal-input crossing fro
  assert(contacted);assert.equal(r.state,'racing');
 });
 for(const hz of [30,60,120])test(`normal controls still park in open garage at ${hz} Hz`,()=>{
- const r=started(),goals=[[224,-135],[226,-110],[226,-90],[226,-82],[227,-78],[230,-74],[240,-73.5]];let g=0,contacts=0;
+ const r=started(),goals=[[224,-135],[226,-110],[226,-90],[226,-82],[227,-78],[230,-74],[240,-73.5]];let g=0,contacts=0;Object.assign(r.car,{x:225.5,z:-145,yaw:0,speed:0});
  for(let f=0;f<hz*50&&r.state==='racing';f++){
   const c=r.car,p=goals[g],d=Math.hypot(p[0]-c.x,p[1]-c.z),e=angleDiff(Math.atan2(p[0]-c.x,p[1]-c.z),c.yaw);
   if(d<3&&g<goals.length-1)g++;const speed=g===goals.length-1?Math.min(3,d*1.6):g>2?5:10;
