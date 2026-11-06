@@ -21,3 +21,9 @@ body.pit-presentation #results{top:12%;left:3%;width:280px;transform:none}
 @media(max-width:700px){#speedometer{width:190px}}
 
 #render-settings{position:absolute;right:38px;top:88px;z-index:8;color:#e8ede8;font-size:11px;background:#111d22ed;border:1px solid #8caaa44a;border-radius:4px;max-width:270px}#render-settings summary{cursor:pointer;padding:9px 12px;list-style-position:inside}#render-settings>div{display:grid;gap:10px;padding:4px 12px 12px}#render-settings select{font:inherit;color:inherit;background:#243336;border:1px solid #8caaa4;padding:7px}#render-settings small{color:#acbdbb;line-height:1.5}#render-settings .texture-choice{display:flex;gap:8px;align-items:center}#render-settings input{accent-color:#eafa3c}#render-settings :focus-visible{outline:2px solid #eafa3c;outline-offset:3px}@media(max-width:700px){#render-settings{right:18px;top:65px;max-width:230px}}
+
+#sectors{display:flex;flex-direction:column;gap:4px;margin:4px 0 9px;font-size:10px;font-variant-numeric:tabular-nums}#sectors span{border-left:3px solid currentColor;padding-left:6px}
+
+#map-wrap .sector-scope{margin-top:5px;font-size:7px;color:#c7b3de}
+/* Keep sector colors readable over pale asphalt and concrete. */
+#map-wrap{padding:10px 12px;background:#132026df;border:1px solid #ffffff25;border-radius:3px;opacity:1}#map-wrap small{text-shadow:0 1px 3px #000}

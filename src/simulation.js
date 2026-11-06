@@ -1,3 +1,4 @@
+import {createSectors,completeSector,finishSectorLap} from './sectors.js';
 import {resolvePitGuideContact} from './pit-structures.js';
 import {KERB_ALLOWANCE} from './surface-profile.js';
 import {createPitService,selectPitService,stepPitService,advanceTyreWear,tyreGrip} from './pit-service.js';
@@ -27,7 +28,7 @@ export class Race {
  constructor(){this.reset();}
  reset(){
    this.car={x:track[0].x,z:track[0].z,yaw:heading(0),speed:0,steer:0};
-   this.pedals=createPedals();this.pitService=createPitService();this.servicePedalLatch=false;this.state='ready';this.elapsed=0;this.lapTime=0;this.laps=[];this.nextCheckpoint=1;this.lastIndex=0;this.offroad=false;this.contact=false;this.countdown=3;this.message='';this.invalid=false;this.inPit=false;this.parkedTime=0;
+   this.sectors=createSectors();this.pedals=createPedals();this.pitService=createPitService();this.servicePedalLatch=false;this.state='ready';this.elapsed=0;this.lapTime=0;this.laps=[];this.nextCheckpoint=1;this.lastIndex=0;this.offroad=false;this.contact=false;this.countdown=3;this.message='';this.invalid=false;this.inPit=false;this.parkedTime=0;
  }
  start(){if(this.state==='paused'){this.state=this.resumeState;return;}if(this.state==='ready'){this.state='countdown';this.countdown=3;}}
  pause(){if(this.state==='racing'||this.state==='countdown'){this.resumeState=this.state;this.state='paused';}}
@@ -36,14 +37,18 @@ export class Race {
  recordProgress(near){
    const i=near.index,delta=(i-this.lastIndex+N+N/2)%N-N/2;
    if(delta>0&&delta<25){
-     // All gates must be crossed forward on tarmac, never by jumping around the track.
+     // Invisible route validation prevents cuts; only three timing sectors are shown.
      const gate=this.nextCheckpoint*N/12;
      if(this.nextCheckpoint<12&&this.lastIndex<gate&&i>=gate&&near.distance<TRACK_WIDTH/2+1){this.nextCheckpoint++;}
+     for(const sector of [0,1]){const boundary=(sector+1)*N/3;
+       if(this.lastIndex<boundary&&i>=boundary&&near.distance<TRACK_WIDTH/2+1&&!this.invalid&&this.nextCheckpoint>=(sector+1)*4+1)completeSector(this.sectors,sector,this.lapTime);
+     }
      if(this.lastIndex>N*.95&&i<N*.05){
        if(this.nextCheckpoint===12&&near.distance<TRACK_WIDTH/2+1&&this.lapTime>5&&!this.invalid){
+         completeSector(this.sectors,2,this.lapTime);finishSectorLap(this.sectors,true);
          this.laps.push(this.lapTime);this.message=`LAP ${this.laps.length} COMPLETE`;
          if(this.laps.length===3)this.state='finished';
-       }else{this.message='MISSED GATE · LAP NOT COUNTED';}
+       }else{this.message='INVALID ROUTE · LAP NOT COUNTED';finishSectorLap(this.sectors,false);}
        this.lapTime=0;this.nextCheckpoint=1;this.invalid=false;
      }
    }
